@@ -1,6 +1,6 @@
 blueprint:
   domain: automation
-  name: Music Assistant - Helyi (kizárólag) hangvezérlés terv
+  name: Music Assistant - Helyi (kizárólag) hangvezérlés sablon-automatizmus
   source_url: https://github.com/music-assistant/voice-support/blob/main/local-assist-blueprint/mass_assist_blueprint_hu.yaml
   description: ' ![Kép](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
 
@@ -87,7 +87,7 @@ blueprint:
 
     Játszd le a New Years Day számot a hálószoba hangszórón rádió módban
 
-    Szóljon az A Hard Days Night dal a Billy Joel előadótól a hálószoba szobában
+    Szóljon az A Hard Days Night dal a Billy Joel előadótól a hálószoba hangszórón
 
     Hallgatnék Classic Rock lejátszási listát a dolgozó szobában
 
@@ -141,11 +141,11 @@ blueprint:
               multiple: true
           default:
           - (játszd le|indítsd el|kapcsold be|hallgatnám|keverj) [a |az ]{media_name}
-            (albumot|lemezt|kislemezt|nagylemezt) [[a |az ]{artist} (előadótól|zenésztől|bandától|egyűttestől|zenekartól)]
+            (albumot|lemezt|kislemezt|nagylemezt) [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
             [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
             (rádió|rádió módban) {radio_mode}]
           - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (album|lemez|kislemez|nagylemez)
-            [[a |az ]{artist} (előadótól|zenésztől|bandától|egyűttestől|zenekartól)]
+            [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
             [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
             (rádió|rádió módban) {radio_mode}]
         track_trigger:
@@ -157,11 +157,11 @@ blueprint:
               multiple: true
           default:
           - (játszd le|indítsd el|kapcsold be|hallgatnám|keverj) [a |az ]{media_name}
-            (számot|dalt) [[a |az ]{artist} (előadótól|zenésztől|bandától|egyűttestől|zenekartól)]
+            (számot|dalt) [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
             [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
             (rádió|rádió módban) {radio_mode}]
           - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (szám|dal)
-            [[a |az ]{artist} (előadótól|zenésztől|bandától|egyűttestől|zenekartól)]
+            [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
             [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
             (rádió|rádió módban) {radio_mode}]
         artist_trigger:

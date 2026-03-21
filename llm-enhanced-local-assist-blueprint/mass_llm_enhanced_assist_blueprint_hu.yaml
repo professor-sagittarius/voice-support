@@ -1,6 +1,6 @@
 blueprint:
   domain: automation
-  name: Music Assistant - Helyi LLM-mel bővített hangvezérlés terv
+  name: Music Assistant - Helyi LLM-mel bővített hangvezérlés sablon-automatizmus
   source_url: https://github.com/music-assistant/voice-support/blob/main/llm-enhanced-local-assist-blueprint/mass_llm_enhanced_assist_blueprint_hu.yaml
   description: '![Kép](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
 
@@ -11,7 +11,7 @@ blueprint:
 
     #### Kötelező
 
-    * Válasszon ki egy LLM társalgási ügynököt az automatizációhoz. A terv egy olyan
+    * Válasszon ki egy LLM társalgási ügynököt az automatizációhoz. A sablon-automatizmus egy olyan
     LLM társalgási ügynökkel való használatra készült, amely nem rendelkezik a ház
     vezérlésével.
 
@@ -75,7 +75,7 @@ blueprint:
     van Music Assistant lejátszó is, ott fogja lejátszani a zenét.
 
     3. Ha nem szerepelt céleszköz a kérésben és a hangasszisztens területe sem
-    volt használható, akkor a tervben beállított `Alapértelmezett lejátszó` lesz
+    volt használható, akkor a sablon-automatizmusban beállított `Alapértelmezett lejátszó` lesz
     használva. Ha nincs beállítva `Alapértelmezett lejátszó`, a `Nincs céleszköz`
     válasz fog megjelenni.
 
@@ -104,7 +104,7 @@ blueprint:
 
     Indítsd el a Classical Nights albumot a hálószobai Sonos hangszórón
 
-    Hallgatnám a lemezt Classical Nights a hálószobai Sonos hangszórón
+    Hallgatnám a Classical Nights lemezt a hálószobai Sonos hangszórón
 
     Játszd le az U2 számait
 
@@ -182,7 +182,7 @@ blueprint:
         <media_info> a kért média leírásával lesz helyettesítve. Az <area_info> és
         a <player_info> a területnevekkel, illetve lejátszónevekkel lesz helyettesítve.
 
-        Ez a szekció lehetővé teszi, hogy a szkriptet más nyelven használja, a mezők
+        Ez a rész lehetővé teszi, hogy az automatizmust más nyelven használja, a mezők
         saját nyelvre fordításával.'
       collapsed: true
       input:
