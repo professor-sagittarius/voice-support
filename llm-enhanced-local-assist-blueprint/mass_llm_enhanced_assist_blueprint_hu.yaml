@@ -11,56 +11,63 @@ blueprint:
 
     #### Kötelező
 
-    * Válassz ki egy LLM társalgási ügynököt az automatizációhoz. A terv egy olyan
+    * Válasszon ki egy LLM társalgási ügynököt az automatizációhoz. A terv egy olyan
     LLM társalgási ügynökkel való használatra készült, amely nem rendelkezik a ház
     vezérlésével.
 
     #### Opcionális
 
-    * Állíts be egy `Alapértelmezett lejátszót`, amelyet akkor használ a rendszer,
+    * Állítson be egy `Alapértelmezett lejátszót`, amelyet akkor használ a rendszer,
     ha a kérésben nem szerepel céleszköz, és a kérés nem olyan területről érkezik,
     ahol Music Assistant lejátszó található.
 
-    * Módosítsd a `Rádió mód` beállítást. Alapértelmezés szerint a Music Assistant
+    * Módosítsa a `Rádió mód` beállítást. Alapértelmezés szerint a Music Assistant
     lejátszó `Ne álljon meg a zene` beállítását használja.
 
-    * Módosítsd az aktiváló mondatokat vagy adj hozzá újakat, ezzel a saját nyelvedre
-    is lefordíthatod a mondatokat.
+    * Módosítsa az aktiváló mondatokat vagy adjon hozzá újakat, ezzel a saját nyelvére
+    is lefordíthatja a mondatokat.
 
-    * Módosítsd a válaszokat vagy fordítsd le a saját nyelvedre.
+    * Módosítsa a válaszokat vagy fordítsa le a saját nyelvére.
 
-    * Módosítsd a területnevek és lejátszónevek LLM-nek való elérhetőségének beállítását.
-    Alapértelmezés szerint ezek elküldésre kerülnek. Ha a beállításokat módosítod és
-    nem teszed elérhetővé a területneveket és lejátszóneveket az LLM számára, a névnek
+    * Módosítsa a területnevek és lejátszónevek LLM-nek való elérhetőségének beállítását.
+    Alapértelmezés szerint ezek elküldésre kerülnek. Ha a beállításokat módosítja és
+    nem teszi elérhetővé a területneveket és lejátszóneveket az LLM számára, a névnek
     pontosan egyeznie kell a Home Assistantban lévő terület- vagy lejátszónévvel.
-    Tehát ha a terület neve _Hálószoba Zsófi_, nem fog működni, ha azt mondod
+    Tehát ha a terület neve _Hálószoba Zsófi_, nem fog működni, ha azt mondja
     _Zsófi hálószobája_, vagy ha a beszédfelismerés _Zsófi_ helyett _Sofia_-t ír.
     Sajnos az álnevek nem használhatók az automatizációban, mivel nincs sablon
     a területek vagy entitások álneveinek lekérdezéséhez. A kis- és nagybetűk
     nem számítanak, tehát a _hálószoba zsófi_ is egyezik, ha a Home Assistantban
     a terület neve _Hálószoba Zsófi_.
 
-    * Módosítsd az LLM-nek szóló promptot. Ezt nem szükséges lefordítanod, ha más
-    nyelvet használsz.
+    * Módosítsa az LLM-nek szóló promptot. Ezt nem szükséges lefordítania, ha más
+    nyelvet használ.
 
 
     ### Használat
 
-    Minden mondatnak:
+    Minden mondatnak az alábbi szavak egyikével kell kezdődnie:
 
-    * a `Keverj`, `Játszd le` vagy `Hallgassuk` szóval kell kezdődnie, amelyet
-    a lejátszani kívánt zene leírása követ. Ha a `Keverj` szóval kezded, a lejátszó
-    a keverés funkciót is bekapcsolja, egyébként a keverés kikapcsolásra kerül.
+    * `Játszd le`, `Indítsd el`, `Kapcsold be` (felszólító mód)
 
-    * ezután opcionálisan egy vagy több területnévvel és/vagy egy vagy több eszköznévvel
-    egészíthető ki, amelyen a zenét le szeretnéd játszani.
+    * `Szóljon`, `Menjen` (felszólító, E/3)
+
+    * `Hallgatnám`, `Hallgatnék` (feltételes mód)
+
+    * `Keverj` (keverés bekapcsolásával)
+
+    Ezután következik a lejátszani kívánt zene leírása, majd opcionálisan egy vagy
+    több területnév és/vagy eszköznév, amelyen a zenét le szeretné játszani.
+
+    Ha a mondat a `Keverj` szóval kezdődik, a lejátszó a keverés funkciót is
+    bekapcsolja, egyébként a keverés kikapcsolásra kerül.
 
     ### Hogyan határozza meg a rendszer a céleszközt:
 
     1. Ha egy vagy több terület és/vagy egy vagy több Music Assistant lejátszó
     szerepel a kérésben, ezeket a területeket és/vagy lejátszókat használja. Ha nem
-    teszed elérhetővé a neveket, és a terület vagy lejátszó neve nem egyezik pontosan
-    a Home Assistantban lévő névvel, az Asszisztens a `Nincs céleszköz válasz`-t
+    teszi elérhetővé a neveket, és a terület vagy lejátszó neve nem egyezik pontosan
+    a Home Assistantban lévő névvel, az Asszisztens a `Nincs céleszköz` választ
     fogja visszaadni.
 
     2. Ha nem szerepel céleszköz a kérésben, az automatizáció először ellenőrzi,
@@ -69,8 +76,8 @@ blueprint:
 
     3. Ha nem szerepelt céleszköz a kérésben és a hangasszisztens területe sem
     volt használható, akkor a tervben beállított `Alapértelmezett lejátszó` lesz
-    használva. Ha nincs beállítva `Alapértelmezett lejátszó`, a `Nincs céleszköz
-    válasz` fog megjelenni.
+    használva. Ha nincs beállítva `Alapértelmezett lejátszó`, a `Nincs céleszköz`
+    válasz fog megjelenni.
 
 
     #### Példák
@@ -79,31 +86,37 @@ blueprint:
 
     Játszd le a legjobb Pink Floyd számokat a konyhában
 
-    Hallgassuk a Jagged Little Pill-t a dolgozószobában
+    Indítsd el a Jagged Little Pill albumot a dolgozószobában
 
-    Hallgassuk az albumot Greatest Hits James Taylortól a konyhában
+    Hallgatnám a Greatest Hits albumot James Taylortól a konyhában
 
-    Játszd le a számot New Years Day a hálószobában
+    Kapcsold be a New Years Day-t a hálószobában
 
-    Játszd le A Hard Days Night-ot Billy Joeltól a hálószobában
+    Szóljon valami jazz a nappaliban
 
-    Hallgassuk a lejátszási listát Classic Rock a dolgozószobában
+    Menjen a Petőfi Rádió a konyhában
 
-    Hallgassuk a BBC Radio 1-et a hálószobában
+    Hallgatnék valami klasszikust a dolgozószobában
 
-    Játszd le az albumot Classical Nights a hálószobai Sonos hangszórón
+    Játszd le a Classic Rock lejátszási listát a dolgozószobában
 
-    Hallgassuk a lemezt Classical Nights a hálószobai Sonos hangszórón
+    Kapcsold be a BBC Radio 1-et a hálószobában
+
+    Indítsd el a Classical Nights albumot a hálószobai Sonos hangszórón
+
+    Hallgatnám a lemezt Classical Nights a hálószobai Sonos hangszórón
 
     Játszd le az U2 számait
 
-    Játszd le az Oppenheimer zeneszerzőjének zenéjét
+    Szóljon valami a Muse-tól
+
+    Indítsd el az Oppenheimer zeneszerzőjének zenéjét
 
     Játszd le azt az albumot amelyiken a meztelen baba úszik a borítón
 
-    Keverj dalokat a Muse-tól.
+    Keverj Muse dalokat
 
-    Keverj az albumból Classical Nights a hálószobai Sonos hangszórón
+    Keverj a Classical Nights albumból a hálószobai Sonos hangszórón
 
     ```'
   homeassistant:
@@ -111,7 +124,7 @@ blueprint:
   input:
     llm_agent:
       name: LLM társalgási ügynök
-      description: Az LLM ügynök, amelyet a lekérdezés feldolgozásához szeretnél használni
+      description: Az LLM ügynök, amelyet a lekérdezés feldolgozásához szeretne használni
       selector:
         entity:
           filter:
@@ -121,7 +134,7 @@ blueprint:
     music_assistant_settings:
       name: Music Assistant lejátszási beállítások
       icon: mdi:music
-      description: Ezekkel a beállításokkal módosíthatod a Music Assistant lejátszás
+      description: Ezekkel a beállításokkal módosíthatja a Music Assistant lejátszás
         kezelését
       input:
         default_player:
@@ -130,7 +143,7 @@ blueprint:
             a rendszer, ha a kérésből nem derül ki, melyik területen vagy melyik lejátszón
             kell lejátszani a kérést
 
-            Hagyd üresen, ha nem szeretnél alapértelmezett lejátszót'
+            Hagyja üresen, ha nem szeretne alapértelmezett lejátszót'
           selector:
             entity:
               filter:
@@ -144,8 +157,8 @@ blueprint:
           description: 'Meghatározza, hogy a "radio_mode" beállítás legyen-e alkalmazva
             a lejátszási műveletnél.
 
-            Ha "Lejátszó beállítás" van kiválasztva, a Music Assistant lejátszó "Ne
-            álljon meg a zene" beállítását használja.
+            Ha "Lejátszó saját beállítása" van kiválasztva, a Music Assistant lejátszó
+            "Ne álljon meg a zene" beállítását használja.
 
             Ha "Mindig" van kiválasztva, a lejátszó folyamatosan új dalokat ad a lejátszási
             listához.
@@ -155,29 +168,29 @@ blueprint:
           selector:
             select:
               options:
-              - Lejátszó beállítás
+              - Lejátszó saját beállítása
               - Mindig
               - Soha
               multiple: false
               custom_value: false
               sort: false
-          default: Lejátszó beállítás
+          default: Lejátszó saját beállítása
     response_settings:
       name: Aktiválás és válaszbeállítások az Asszisztenshez
       icon: mdi:chat
-      description: 'Ezzel a beállítással adhatod meg az Asszisztens válaszait. A
+      description: 'Ezzel a beállítással adhatja meg az Asszisztens válaszait. A
         <media_info> a kért média leírásával lesz helyettesítve. Az <area_info> és
         a <player_info> a területnevekkel, illetve lejátszónevekkel lesz helyettesítve.
 
-        Ez a szekció lehetővé teszi, hogy a szkriptet más nyelven használd, a mezők
+        Ez a szekció lehetővé teszi, hogy a szkriptet más nyelven használja, a mezők
         saját nyelvre fordításával.'
       collapsed: true
       input:
         trigger:
           name: Társalgási aktiváló mondatok
-          description: Itt adhatsz hozzá több aktiváló mondatot vagy módosíthatod a
+          description: Itt adhat hozzá több aktiváló mondatot vagy módosíthatja a
             meglévőket. A szögletes zárójelek [ ] közé zárt szöveg opcionális. A kerek
-            zárójelek ( ) és a függőleges vonal | segítségével több értéket adhatsz
+            zárójelek ( ) és a függőleges vonal | segítségével több értéket adhat
             meg, amelyek 'vagy' kapcsolatban állnak. A { lekérdezés } egy helyettesítő
             érték, amely a kért médiát és opcionálisan a területet vagy Music Assistant
             lejátszót tartalmazza.
@@ -186,11 +199,12 @@ blueprint:
               multiline: false
               multiple: true
           default:
-          - (keverj|játszd le|játszd|hallgassuk|lejátszás) {query}
+          - (játszd le|indítsd el|szóljon|menjen|kapcsold be|hallgatnám|hallgatnék|keverj)
+            {query}
         combine_text:
           name: Összekötő szó
           description: Ezt a szót használja a válaszban, ha több terület vagy lejátszó
-            van megcélozva. Tehát ha a nappaliban és a konyhában kéred a lejátszást,
+            van megcélozva. Tehát ha a nappaliban és a konyhában kéri a lejátszást,
             a válaszban 'nappali <és> konyha' jelenik meg. Az <és> ennek a paraméternek
             az értékével lesz helyettesítve.
           selector:
@@ -206,8 +220,9 @@ blueprint:
             text:
               multiline: false
               multiple: false
-          default: Nem sikerült meghatározni a céleszközt és nincs beállítva alapértelmezett
-            lejátszó
+          default: Sajnos nem tudtam eldönteni, melyik lejátszón szóljon a zene.
+            Kérem, adjon meg egy területet vagy lejátszót, vagy állítson be egy alapértelmezett
+            lejátszót.
         area_response:
           name: Terület válasz
           description: Az Asszisztens ezt a választ adja, ha csak területek vannak
@@ -216,8 +231,8 @@ blueprint:
             text:
               multiline: false
               multiple: false
-          default: 'Most {{ ''keverem'' if ''keverj'' in trigger.sentence | lower else
-            ''lejátszom''}} a következőt: <media_info>, itt: <area_info>'
+          default: '{{ ''Keverem'' if ''keverj'' in trigger.sentence | lower else
+            ''Lejátszom''}} — <media_info> — <area_info>'
         player_response:
           name: Lejátszó válasz
           description: Az Asszisztens ezt a választ adja, ha csak Music Assistant lejátszók
@@ -226,8 +241,8 @@ blueprint:
             text:
               multiline: false
               multiple: false
-          default: 'Most {{ ''keverem'' if ''keverj'' in trigger.sentence | lower else
-            ''lejátszom''}} a következőt: <media_info>, ezen: <player_info>'
+          default: '{{ ''Keverem'' if ''keverj'' in trigger.sentence | lower else
+            ''Lejátszom''}} — <media_info> — <player_info>'
         area_and_player_response:
           name: Terület és lejátszó válasz
           description: Az Asszisztens ezt a választ adja, ha területek és lejátszók
@@ -236,18 +251,18 @@ blueprint:
             text:
               multiline: false
               multiple: false
-          default: 'Most {{ ''keverem'' if ''keverj'' in trigger.sentence | lower else
-            ''lejátszom''}} a következőt: <media_info>, itt: <area_info> és ezen: <player_info>'
+          default: '{{ ''Keverem'' if ''keverj'' in trigger.sentence | lower else
+            ''Lejátszom''}} — <media_info> — <area_info> és <player_info>'
     prompt_settings:
       name: LLM prompt beállítások
       icon: mdi:robot
-      description: Ezzel a beállítással finomhangolhatod a promptokat az adott LLM
+      description: Ezzel a beállítással finomhangolhatja a promptokat az adott LLM
         (modell) számára. A legtöbb esetben az alapértelmezett beállítás megfelelő.
       collapsed: true
       input:
         expose_players:
           name: Music Assistant lejátszók elérhetővé tétele
-          description: Kapcsold ki, ha nem szeretnéd a Music Assistant lejátszók neveit
+          description: Kapcsolja ki, ha nem szeretné a Music Assistant lejátszók neveit
             elérhetővé tenni az LLM számára. Ha ki van kapcsolva, a kérésben szereplő
             területnévnek pontosan egyeznie kell a Home Assistantban lévő területnévvel
           selector:
@@ -255,7 +270,7 @@ blueprint:
           default: true
         expose_areas:
           name: Music Assistant lejátszóval rendelkező területek elérhetővé tétele
-          description: Kapcsold ki, ha nem szeretnéd azon területek neveit elérhetővé
+          description: Kapcsolja ki, ha nem szeretné azon területek neveit elérhetővé
             tenni az LLM számára, amelyekben Music Assistant lejátszó található. Ha
             ki van kapcsolva, a kérésben szereplő lejátszónévnek pontosan egyeznie
             kell a Home Assistantban lévő lejátszónévvel
@@ -277,6 +292,20 @@ blueprint:
             include it in the JSON response. If the query specifies only an artist,
             album, or playlist, provide details as appropriate without assuming unspecified
             specifics.
+
+            The input query is in Hungarian. Hungarian uses different verb conjugations
+            depending on the trigger word, but the meaning is the same — extract the
+            media, artist, area, and player info regardless of conjugation pattern.
+            Examples of equivalent requests:
+
+            - "Játszd le a Bohemian Rhapsody-t" (imperative, definite conjugation)
+
+            - "Szóljon a Bohemian Rhapsody" (imperative, indefinite, 3rd person)
+
+            - "Hallgatnám a Bohemian Rhapsody-t" (conditional, definite)
+
+            These all mean: play Bohemian Rhapsody. Focus on the content, not the
+            grammatical form.
 
             This is the voice command query provided by the user: "{{ trigger.sentence
             }}"
@@ -464,8 +493,8 @@ blueprint:
           description: Ez a mező tartalmazza a korábban beállított LLM promptot, mielőtt
             a prompt beállítások több részre lettek bontva. Alapértelmezetten üres,
             csak akkor tartalmaz szöveget, ha az automatizációt már a prompt beállítások
-            szétbontása előtt használtad. Ha ez a beállítás tartalmazza a promptot,
-            használhatod a módosítások visszamásolásához a megfelelő fenti részbe,
+            szétbontása előtt használta. Ha ez a beállítás tartalmazza a promptot,
+            használhatja a módosítások visszamásolásához a megfelelő fenti részbe,
             mivel ez a prompt beállítás nem kerül felhasználásra az automatizációban
           selector:
             text:
