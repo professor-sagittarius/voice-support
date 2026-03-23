@@ -1,0 +1,611 @@
+blueprint:
+  domain: automation
+  name: Music Assistant - Helyi LLM-mel bővített hangvezérlés sablon-automatizmus
+  source_url: https://github.com/music-assistant/voice-support/blob/main/llm-enhanced-local-assist-blueprint/mass_llm_enhanced_assist_blueprint_hu.yaml
+  description: '![Kép](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
+
+    # Zene lejátszása hangparancsokkal LLM segítséggel
+
+
+    ### Beállítás
+
+    #### Kötelező
+
+    * Válasszon ki egy LLM társalgási ügynököt az automatizációhoz. A sablon-automatizmus egy olyan
+    LLM társalgási ügynökkel való használatra készült, amely nem rendelkezik a ház
+    vezérlésével.
+
+    #### Opcionális
+
+    * Állítson be egy `Alapértelmezett lejátszót`, amelyet akkor használ a rendszer,
+    ha a kérésben nem szerepel céleszköz, és a kérés nem olyan területről érkezik,
+    ahol Music Assistant lejátszó található.
+
+    * Módosítsa a `Rádió mód` beállítást. Alapértelmezés szerint a Music Assistant
+    lejátszó `Ne álljon meg a zene` beállítását használja.
+
+    * Módosítsa az aktiváló mondatokat vagy adjon hozzá újakat, ezzel a saját nyelvére
+    is lefordíthatja a mondatokat.
+
+    * Módosítsa a válaszokat vagy fordítsa le a saját nyelvére.
+
+    * Módosítsa a területnevek és lejátszónevek LLM-nek való elérhetőségének beállítását.
+    Alapértelmezés szerint ezek elküldésre kerülnek. Ha a beállításokat módosítja és
+    nem teszi elérhetővé a területneveket és lejátszóneveket az LLM számára, a névnek
+    pontosan egyeznie kell a Home Assistantban lévő terület- vagy lejátszónévvel.
+    Tehát ha a terület neve _Hálószoba Zsófi_, nem fog működni, ha azt mondja
+    _Zsófi hálószobája_, vagy ha a beszédfelismerés _Zsófi_ helyett _Sofia_-t ír.
+    Sajnos az álnevek nem használhatók az automatizációban, mivel nincs sablon
+    a területek vagy entitások álneveinek lekérdezéséhez. A kis- és nagybetűk
+    nem számítanak, tehát a _hálószoba zsófi_ is egyezik, ha a Home Assistantban
+    a terület neve _Hálószoba Zsófi_.
+
+    * Módosítsa az LLM-nek szóló promptot. Ezt nem szükséges lefordítania, ha más
+    nyelvet használ.
+
+
+    ### Használat
+
+    Minden mondatnak az alábbi szavak egyikével kell kezdődnie:
+
+    * `Játszd le`, `Indítsd el`, `Kapcsold be` (felszólító mód)
+
+    * `Szóljon`, `Menjen` (felszólító, E/3)
+
+    * `Hallgatnám`, `Hallgatnék` (feltételes mód)
+
+    * `Keverj` (keverés bekapcsolásával)
+
+    Ezután következik a lejátszani kívánt zene leírása, majd opcionálisan egy vagy
+    több területnév és/vagy eszköznév, amelyen a zenét le szeretné játszani.
+
+    Ha a mondat a `Keverj` szóval kezdődik, a lejátszó a keverés funkciót is
+    bekapcsolja, egyébként a keverés kikapcsolásra kerül.
+
+    ### Hogyan határozza meg a rendszer a céleszközt:
+
+    1. Ha egy vagy több terület és/vagy egy vagy több Music Assistant lejátszó
+    szerepel a kérésben, ezeket a területeket és/vagy lejátszókat használja. Ha nem
+    teszi elérhetővé a neveket, és a terület vagy lejátszó neve nem egyezik pontosan
+    a Home Assistantban lévő névvel, az Asszisztens a `Nincs céleszköz` választ
+    fogja visszaadni.
+
+    2. Ha nem szerepel céleszköz a kérésben, az automatizáció először ellenőrzi,
+    hogy a kérés egy adott területen lévő eszközről érkezett-e. Ha ugyanazon a területen
+    van Music Assistant lejátszó is, ott fogja lejátszani a zenét.
+
+    3. Ha nem szerepelt céleszköz a kérésben és a hangasszisztens területe sem
+    volt használható, akkor a sablon-automatizmusban beállított `Alapértelmezett lejátszó` lesz
+    használva. Ha nincs beállítva `Alapértelmezett lejátszó`, a `Nincs céleszköz`
+    válasz fog megjelenni.
+
+
+    #### Példák
+
+    ```
+
+    Játszd le a legjobb Pink Floyd számokat a konyhában
+
+    Indítsd el a Jagged Little Pill albumot a dolgozószobában
+
+    Hallgatnám a Greatest Hits albumot James Taylortól a konyhában
+
+    Kapcsold be a New Years Day-t a hálószobában
+
+    Szóljon valami jazz a nappaliban
+
+    Menjen a Petőfi Rádió a konyhában
+
+    Hallgatnék valami klasszikust a dolgozószobában
+
+    Játszd le a Classic Rock lejátszási listát a dolgozószobában
+
+    Kapcsold be a BBC Radio 1-et a hálószobában
+
+    Indítsd el a Classical Nights albumot a hálószobai Sonos hangszórón
+
+    Hallgatnám a Classical Nights lemezt a hálószobai Sonos hangszórón
+
+    Játszd le az U2 számait
+
+    Szóljon valami a Muse-tól
+
+    Indítsd el az Oppenheimer zeneszerzőjének zenéjét
+
+    Játszd le azt az albumot amelyiken a meztelen baba úszik a borítón
+
+    Keverj Muse dalokat
+
+    Keverj a Classical Nights albumból a hálószobai Sonos hangszórón
+
+    ```'
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    llm_agent:
+      name: LLM társalgási ügynök
+      description: Az LLM ügynök, amelyet a lekérdezés feldolgozásához szeretne használni
+      selector:
+        entity:
+          filter:
+          - domain:
+            - conversation
+          multiple: false
+    music_assistant_settings:
+      name: Music Assistant lejátszási beállítások
+      icon: mdi:music
+      description: Ezekkel a beállításokkal módosíthatja a Music Assistant lejátszás
+        kezelését
+      input:
+        default_player:
+          name: Alapértelmezett lejátszó
+          description: 'Az alapértelmezett Music Assistant lejátszó, amelyet akkor használ
+            a rendszer, ha a kérésből nem derül ki, melyik területen vagy melyik lejátszón
+            kell lejátszani a kérést
+
+            Hagyja üresen, ha nem szeretne alapértelmezett lejátszót'
+          selector:
+            entity:
+              filter:
+              - integration: music_assistant
+                domain:
+                - media_player
+              multiple: false
+          default:
+        play_continuously:
+          name: Rádió mód
+          description: 'Meghatározza, hogy a "radio_mode" beállítás legyen-e alkalmazva
+            a lejátszási műveletnél.
+
+            Ha "Lejátszó saját beállítása" van kiválasztva, a Music Assistant lejátszó
+            "Ne álljon meg a zene" beállítását használja.
+
+            Ha "Mindig" van kiválasztva, a lejátszó folyamatosan új dalokat ad a lejátszási
+            listához.
+
+            Ha "Soha" van kiválasztva, a lejátszó megáll, miután az LLM által kiválasztott
+            dalok véget érnek.'
+          selector:
+            select:
+              options:
+              - Lejátszó saját beállítása
+              - Mindig
+              - Soha
+              multiple: false
+              custom_value: false
+              sort: false
+          default: Lejátszó saját beállítása
+    response_settings:
+      name: Aktiválás és válaszbeállítások az Asszisztenshez
+      icon: mdi:chat
+      description: 'Ezzel a beállítással adhatja meg az Asszisztens válaszait. A
+        <media_info> a kért média leírásával lesz helyettesítve. Az <area_info> és
+        a <player_info> a területnevekkel, illetve lejátszónevekkel lesz helyettesítve.
+
+        Ez a rész lehetővé teszi, hogy az automatizmust más nyelven használja, a mezők
+        saját nyelvre fordításával.'
+      collapsed: true
+      input:
+        trigger:
+          name: Társalgási aktiváló mondatok
+          description: Itt adhat hozzá több aktiváló mondatot vagy módosíthatja a
+            meglévőket. A szögletes zárójelek [ ] közé zárt szöveg opcionális. A kerek
+            zárójelek ( ) és a függőleges vonal | segítségével több értéket adhat
+            meg, amelyek 'vagy' kapcsolatban állnak. A { lekérdezés } egy helyettesítő
+            érték, amely a kért médiát és opcionálisan a területet vagy Music Assistant
+            lejátszót tartalmazza.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (játszd le|indítsd el|szóljon|menjen|kapcsold be|hallgatnám|hallgatnék|keverj)
+            {query}
+        combine_text:
+          name: Összekötő szó
+          description: Ezt a szót használja a válaszban, ha több terület vagy lejátszó
+            van megcélozva. Tehát ha a nappaliban és a konyhában kéri a lejátszást,
+            a válaszban 'nappali <és> konyha' jelenik meg. Az <és> ennek a paraméternek
+            az értékével lesz helyettesítve.
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: és
+        no_target_response:
+          name: Nincs céleszköz válasz
+          description: Az Asszisztens ezt a választ adja, ha nem sikerült meghatározni
+            a céleszközt és nincs beállítva alapértelmezett lejátszó
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: Sajnos nem tudtam eldönteni, melyik lejátszón szóljon a zene.
+            Kérem, adjon meg egy területet vagy lejátszót, vagy állítson be egy alapértelmezett
+            lejátszót.
+        area_response:
+          name: Terület válasz
+          description: Az Asszisztens ezt a választ adja, ha csak területek vannak
+            megcélozva
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '{{ ''Keverem'' if ''keverj'' in trigger.sentence | lower else
+            ''Lejátszom''}} — <media_info> — <area_info>'
+        player_response:
+          name: Lejátszó válasz
+          description: Az Asszisztens ezt a választ adja, ha csak Music Assistant lejátszók
+            vannak megcélozva
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '{{ ''Keverem'' if ''keverj'' in trigger.sentence | lower else
+            ''Lejátszom''}} — <media_info> — <player_info>'
+        area_and_player_response:
+          name: Terület és lejátszó válasz
+          description: Az Asszisztens ezt a választ adja, ha területek és lejátszók
+            is meg vannak célozva
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '{{ ''Keverem'' if ''keverj'' in trigger.sentence | lower else
+            ''Lejátszom''}} — <media_info> — <area_info> és <player_info>'
+    prompt_settings:
+      name: LLM prompt beállítások
+      icon: mdi:robot
+      description: Ezzel a beállítással finomhangolhatja a promptokat az adott LLM
+        (modell) számára. A legtöbb esetben az alapértelmezett beállítás megfelelő.
+      collapsed: true
+      input:
+        expose_players:
+          name: Music Assistant lejátszók elérhetővé tétele
+          description: Kapcsolja ki, ha nem szeretné a Music Assistant lejátszók neveit
+            elérhetővé tenni az LLM számára. Ha ki van kapcsolva, a kérésben szereplő
+            területnévnek pontosan egyeznie kell a Home Assistantban lévő területnévvel
+          selector:
+            boolean: {}
+          default: true
+        expose_areas:
+          name: Music Assistant lejátszóval rendelkező területek elérhetővé tétele
+          description: Kapcsolja ki, ha nem szeretné azon területek neveit elérhetővé
+            tenni az LLM számára, amelyekben Music Assistant lejátszó található. Ha
+            ki van kapcsolva, a kérésben szereplő lejátszónévnek pontosan egyeznie
+            kell a Home Assistantban lévő lejátszónévvel
+          selector:
+            boolean: {}
+          default: true
+        llm_prompt_intro:
+          name: LLM prompt bevezetés
+          description: Bevezetés az LLM számára a társalgás céljának megértéséhez
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'You are an AI process that transforms a music search query into
+            a structured JSON. For every query, you must research and provide specific
+            details—such as titles, artist names, or album names—if they are not directly
+            mentioned in the query. For example, if the query is "play the latest
+            album by Foo Fighters," you should research the latest album title and
+            include it in the JSON response. If the query specifies only an artist,
+            album, or playlist, provide details as appropriate without assuming unspecified
+            specifics.
+
+            The input query is in Hungarian. Hungarian uses different verb conjugations
+            depending on the trigger word, but the meaning is the same — extract the
+            media, artist, area, and player info regardless of conjugation pattern.
+            Examples of equivalent requests:
+
+            - "Játszd le a Bohemian Rhapsody-t" (imperative, definite conjugation)
+
+            - "Szóljon a Bohemian Rhapsody" (imperative, indefinite, 3rd person)
+
+            - "Hallgatnám a Bohemian Rhapsody-t" (conditional, definite)
+
+            These all mean: play Bohemian Rhapsody. Focus on the content, not the
+            grammatical form.
+
+            This is the voice command query provided by the user: "{{ trigger.sentence
+            }}"
+
+
+            Here is the structured JSON that I expect in response {"action_data":
+            {"media_id":"name", "media_type":"type", "artist":"name", "album":"name"},
+            "media_description": "description of media", "target_data": {"areas":
+            ["area name"], "players": ["player name"]}}'
+        llm_prompt_media_type:
+          name: Médiatípus LLM prompt
+          description: A kimenet "media_type" paraméterének magyarázata
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'The argument "media_type" is mandatory and must always be provided
+            no matter what!
+
+            "media_type" can only be one of 5 different values:
+
+            - "track" if the search is about a specific track or a list of tracks.
+
+            - "album" if the search is about an album or a list of albums.
+
+            - "artist" if the search is about an artist.
+
+            - "playlist" if the search specifically requests a playlist.
+
+            - "radio" in case the search is a radio channel.
+
+            media_type is mandatory and must always be provided. In case a request
+            does not match any of these types, for example when music from a specific
+            genre is requested, then use "track" and provide a list of matching songs
+            for the "media_id" parameter.'
+        llm_prompt_media_id:
+          name: Médiaazonosító LLM prompt
+          description: A kimenet "media_id" paraméterének magyarázata
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'The argument "media_id" is also mandatory and must always be provided
+            no matter what!
+
+            media_id is the most specific from track, album, and artist.
+
+            "track" and "artist" can be a single value or multiple values.
+
+            - If the search is about a track: Then media_id is the track name or a
+            json formatted list of track names. In case there are multiple artists
+            in the result, use both the artist name and song name separated by a dash
+            as track name (example: "Artist name - Song name"). In case all songs
+            are from the same artist, use the artist for the "artist" parameter, and
+            only use the song names as track name.
+
+            - If the search is about an album: Then media_id is the album name or
+            a json formatted list of album names.
+
+            - If the search is about an artist: Then media_id is the artist name.
+
+            - If the search is a specific playlist: Then media_id is the requested
+            playlist.
+
+            - If the search is a radio channel: Then media_id is the requested channel.
+
+            "media_id" is a mandatory argument and must always be provided.'
+        llm_prompt_artist_album:
+          name: Előadó és album LLM prompt
+          description: A kimenet "album" és "artist" paramétereinek magyarázata
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'In case it is needed, the fields "artist" and "album" can be used
+            to further restrict the search.
+
+            For example, if the input is "Hells Bells by ACDC", then the output should
+            be {"action_data":{"media_id":"Hells Bells", "media_type":"track", "artist":"AC/DC"}}
+
+            "artist" and "album" are optional and never used in the case of a playlist
+            search.'
+        llm_prompt_examples:
+          name: Műveletadatok példák LLM prompt
+          description: Példák a kimenet "action_data" részéhez
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'There can be several types of answers for the "action_data" dictionary.
+            Here are some examples:
+
+            Just an artist >> {"action_data":{"media_id": "artist name", "media_type":"artist"}}.
+
+            An album by an artist >> {"action_data":{"media_id": "album name", "media_type": "album",
+            "artist": "artist name"}}.
+
+            A track by an artist >> {"action_data":{"media_id": "track name", "media_type": "track",
+            "artist": "artist name"}}.
+
+            Just a track if the artist is not known >> {"action_data":{"media_id": "track name",
+            "media_type": "track"}}.
+
+            Just a playlist if the request is a specific playlist >> {"action_data":{"media_id":"playlist
+            name", "media_type":"playlist"}}.
+
+            Multiple tracks of different artists >> {"action_data":{"media_id": ["Artist name - Song
+            name", "Another artist name - Another song name", "Another artist name
+            - Another song name"], "media_type":"track"}}.
+
+            Multiple tracks of the same artist >> {"action_data":{"media_id": ["Song name", "Another
+            song name"], "artist": "artist name", "media_type":"track"}}'
+        llm_prompt_media_description:
+          name: Médialeírás LLM prompt
+          description: A kimenet "media_description" részének magyarázata
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: The "media_description" key is used to describe the media which
+            will be played. This can be taken from the voice command query, but it
+            should be only the part which is relevant for the media. So if the voice
+            request is "Play the best Queen songs on the living room player" the value
+            for "media_description" should be "the best Queen songs"
+        llm_prompt_target:
+          name: Céladatok LLM prompt
+          description: A kimenet "target_data" részének magyarázata
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'The "target_data" key is used to define the information on which
+            the request should be played.
+
+            {% if expose_areas %}These are the area names which have a Music Assantant
+            player: {{ area_names }}. Only use these area names for the "target_data".
+            In case another area description is used in the request, try to map it
+            to one of these area names." {% endif %}
+
+            In case the query requests the music to be played in one or more areas
+            {% if expose_areas %}in which a Music Assistant player is located{% endif
+            %}, use {"areas": ["area name"]} for "target_data". Always use a list
+            with area names, even when there is only one. {% if expose_areas %}Try
+            to match the areas mentioned in the request to the provided area names.
+            Only use area names from the list provided. {% else %}Do not include articles
+            like "the" at the start of the area name. So if the request is "Play music
+            from Queen in the kitchen" use "kitchen" as area name. Besides removing
+            the first article, use exactly what was provided in the request.{% endif
+            %}When no area is mentioned in the voice request{% if expose_areas %}
+            or no area could be matched{% endif %}, use {"areas":[]}
+
+            {% if expose_players %}These are the Music Assistant players in the system:
+            {{ player_names }}. Only use these names for the "target_data". In case
+            another player name is mentioned in the request, try to map it to one
+            of these player names.{% endif %}
+
+            In case the query requests the music to be played on one or more media
+            players, use {"players": ["player name"]} for "target_data". Always use
+            a list with player names, even when there is only one. {% if expose_players
+            %}Try to match the players mentioned in the request to the provided player
+            names. Only use player names from the list provided. {% else %}Do not
+            include articles like "the" at the start of the player name. So if the
+            request is "Play music from Queen on the bedroom Sonos" use "bedroom Sonos"
+            as area name. Besides removing the first article, use exactly what was
+            provided in the request.{% endif %}When no player is mentioned in the
+            voice  request{% if expose_players %} or no player could be matched {%
+            endif %}, use {"players":[]}'
+        llm_prompt_outro:
+          name: LLM prompt befejezés
+          description: Záró megjegyzések további magyarázatokkal az LLM számára
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'Note that the input query can be in a different language. For
+            the "media_type" the untranslated English terms should be used, in case
+            of a playlist search use the language used in the input.
+
+
+            IMPORTANT: You must reply with only the JSON model, nothing before nor
+            after because your response will be processed by a search component of
+            a media player service. So also no code tags. Only the JSON!'
+        llm_prompt:
+          name: Régi LLM prompt beállítás
+          description: Ez a mező tartalmazza a korábban beállított LLM promptot, mielőtt
+            a prompt beállítások több részre lettek bontva. Alapértelmezetten üres,
+            csak akkor tartalmaz szöveget, ha az automatizációt már a prompt beállítások
+            szétbontása előtt használta. Ha ez a beállítás tartalmazza a promptot,
+            használhatja a módosítások visszamásolásához a megfelelő fenti részbe,
+            mivel ez a prompt beállítás nem kerül felhasználásra az automatizációban
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: ''
+triggers:
+- alias: Aktiválás zenei kéréshez
+  trigger: conversation
+  command: !input trigger
+actions:
+- alias: Blueprint bemenet tárolása változókban a promptban való felhasználáshoz
+  variables:
+    version: 20250404
+    shuffle: '{{ ''keverj'' in trigger.sentence | lower }}'
+    expose_areas: !input expose_areas
+    expose_players: !input expose_players
+    prompt:
+      intro: !input llm_prompt_intro
+      media_type: !input llm_prompt_media_type
+      media_id: !input llm_prompt_media_id
+      artist_album: !input llm_prompt_artist_album
+      examples: !input llm_prompt_examples
+      description: !input llm_prompt_media_description
+      target: !input llm_prompt_target
+      outro: !input llm_prompt_outro
+    area_names: '{{ integration_entities(''music_assistant'')  | map(''area_name'')
+      | reject(''none'') | join('', '') }}'
+    player_names: '{{ integration_entities(''music_assistant'') | map(''state_attr'',
+      ''friendly_name'') | join('', '') }}'
+- alias: Kérés elküldése az LLM-nek
+  action: conversation.process
+  data:
+    text: '{{ prompt.values() | join(''
+
+
+      '') }}'
+    agent_id: !input llm_agent
+  response_variable: result
+- alias: LLM eredmény releváns részének tárolása változóban és céleszköz meghatározása
+  variables:
+    llm_result: '{{ result.response.speech.plain.speech | regex_replace("```(?:json)?\\s*", "")
+      | regex_replace("\\s*```\\s*$", "") | trim | from_json }}'
+    play_continuously: !input play_continuously
+    llm_action_data:
+      media_id: '{{ llm_result.action_data.media_id }}'
+      media_type: '{{ llm_result.action_data.media_type }}'
+      artist: '{{ llm_result.action_data.artist | default(''NA'', true) }}'
+      album: '{{ llm_result.action_data.album | default(''NA'', true) }}'
+      radio_mode: '{{ false if play_continuously == ''Soha'' else play_continuously
+        == ''Mindig'' and llm_result.action_data.media_type != ''radio'' or ''NA''
+        }}'
+    llm_target_data:
+      entity_id: '{% set players = llm_result.get(''target_data'', {}).get(''players'',
+        []) %} {% set players = players | join(''|'') if players is list else players
+        %} {{ integration_entities(''music_assistant'') | expand | selectattr(''name'',
+        ''in'', player_names.split('', '') | select(''search'', players, ignorecase=true)
+        | list) | map(attribute=''entity_id'') | select(''search'', ''^media_player.'') |
+        list if players else [] }}'
+      area_id: '{% set areas = llm_result.get(''target_data'', {}).get(''areas'',
+        []) %} {% set areas = areas | join(''|'') if areas is list else areas %} {{
+        area_names.split('', '') | select(''search'', areas, ignorecase=true) | map(''area_id'')
+        | list if areas else [] }}'
+    llm_target: '{{ iif(llm_result.get(''target_data'', {}).get(''players'') or llm_result.get(''target_data'',
+      {}).get(''areas'')) }}'
+    device_area: '{{ area_id(trigger.device_id) if area_name(trigger.device_id) in
+      area_names.split('', '') }}'
+    default_player: !input default_player
+    backup_target: '{{ (dict(area_id=[device_area]) if device_area) or (dict(entity_id=[default_player])
+      if default_player) }}'
+    target_data: '{{ (llm_target_data if llm_target else backup_target) | default({},
+      true) }}'
+    target: '{{ dict(target_data.items() | selectattr(''1'')) }}'
+- alias: Csak akkor próbáljon zenét lejátszani, ha a céleszköz meg van határozva
+  if:
+  - alias: Ellenőrzés, hogy sikerült-e meghatározni a céleszközt
+    condition: template
+    value_template: '{{ iif(target) }}'
+  then:
+  - alias: Zene lejátszása az LLM eredménye alapján
+    action: music_assistant.play_media
+    data: '{{ dict(llm_action_data.items() | rejectattr(''1'', ''eq'', ''NA'')) }}'
+    target: '{{ target }}'
+  - alias: Keverés be/kikapcsolása a Music Assistant lejátszón
+    action: media_player.shuffle_set
+    data:
+      shuffle: '{{ shuffle }}'
+    target: '{{ target }}'
+- alias: Változók beállítása a válaszokhoz
+  variables:
+    combine: !input combine_text
+    responses:
+      no_target: !input no_target_response
+      only_area: !input area_response
+      only_player: !input player_response
+      area_player: !input area_and_player_response
+    response: '{% if iif(target.get(''area_id'') and target.get(''entity_id'')) %}
+      area_player {% elif iif(target.get(''area_id'')) %} only_area {% elif iif(target.get(''entity_id''))
+      %} only_player {% else %} no_target {% endif %}'
+    area_list: '{{ target.get(''area_id'', []) | map(''area_name'') | list }}'
+    area_info: '{{ area_list[:-1] | join('', '') ~ '' '' ~ combine ~ '' '' ~ area_list[-1]
+      if area_list | count > 2 else area_list | join('' '' ~ combine ~ '' '') }}'
+    player_list: '{{ target.get(''entity_id'') | map(''state_attr'', ''friendly_name'')
+      | list }}'
+    player_info: '{{ player_list[:-1] | join('', '') ~ '' '' ~ combine ~ '' '' ~ player_list[-1]
+      if player_list | count > 2 else player_list | join('' '' ~ combine ~ '' '')
+      }}'
+    media_info: '{{ llm_result.media_description | default(llm_action_data.media_id,
+      true) }}'
+- alias: Válasz beállítása az Asszisztens számára
+  set_conversation_response: '{{ responses[response] | replace(''<media_info>'', media_info)
+    | replace(''<area_info>'', area_info) | replace(''<player_info>'', player_info)
+    }}'
+mode: parallel

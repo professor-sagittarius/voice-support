@@ -1,0 +1,292 @@
+blueprint:
+  domain: automation
+  name: Music Assistant - Helyi (kizárólag) hangvezérlés sablon-automatizmus
+  source_url: https://github.com/music-assistant/voice-support/blob/main/local-assist-blueprint/mass_assist_blueprint_hu.yaml
+  description: ' ![Kép](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
+
+    # Zene lejátszása hangparancsokkal
+
+    ### Beállítás
+
+    #### Kötelező
+
+    * Állítson be egy `Alapértelmezett lejátszót`, amelyet akkor használ a rendszer, ha
+    a kérésben nem szerepel céleszköz, és a kérés nem olyan területről érkezik, ahol
+    Music Assistant lejátszó található.
+
+    #### Opcionális
+
+    * Módosítsa az aktiváló mondatokat vagy adjon hozzá újakat, ezzel a saját nyelvére
+    is lefordíthatja a mondatokat.
+
+    * Módosítsa a válaszokat vagy fordítsa le a saját nyelvére.
+
+
+    ### Használat
+
+    Minden mondatnak az alábbi szavak egyikével kell kezdődnie:
+
+    * `Játszd le`, `Indítsd el`, `Kapcsold be` (felszólító mód, tárgyas ragozás)
+
+    * `Szóljon`, `Menjen` (felszólító, E/3, alanyi ragozás)
+
+    * `Hallgatnám` (feltételes mód, tárgyas ragozás)
+
+    * `Hallgatnék` (feltételes mód, alanyi ragozás)
+
+    * `Keverj` (keverés bekapcsolásával)
+
+    Ezután a kívánt elem neve következik, majd a médiatípus
+    (`előadót`/`számot`/`albumot`/`lejátszási listát`/`rádiót`).
+
+    * album és szám esetén opcionálisan követheti az előadó neve és az
+    `előadótól`/`zenésztől`/`zenekartól` kifejezés
+
+    * ezután opcionálisan megadható a terület vagy az eszköz neve
+
+    * előadó, szám, album és lejátszási lista esetén opcionálisan követheti
+    a `rádió módban` kifejezés
+
+    Ha a mondat a `Keverj` szóval kezdődik, a lejátszó véletlenszerű
+    sorrendben játssza le a számokat, egyébként kikapcsolja a keverést.
+
+    A tárgyas ragozású trigger szavak (játszd le, indítsd el, kapcsold be, hallgatnám)
+    után a médiatípus tárgyesetben áll (albumot, számot, előadót), míg az alanyi
+    ragozásúak (szóljon, menjen, hallgatnék) után alanyesetben (album, szám, előadó).
+
+    #### Elfogadott változatok
+
+    a határozott névelő (`a`, `az`) használata opcionális
+
+    |Médiatípus|Elfogadott változatok|
+
+    |---|---|
+
+    |`előadó`|`zenész`, `banda`, `együttes`, `zenekar`|
+
+    |`szám`|`dal`|
+
+    |`album`|`lemez`, `kislemez`, `nagylemez`|
+
+    |`rádió`|`rádióállomás`, `rádióadó`, `állomás`|
+
+    |`lejátszási lista`|`playlist`|
+
+
+    #### Példák
+
+    ```
+
+    Játszd le a Pink Floyd előadót a konyha szobában
+
+    Indítsd el a Jagged Little Pill albumot a dolgozó szobában
+
+    Hallgatnám a Greatest Hits albumot a James Taylor előadótól a konyha hangszórón
+
+    Kapcsold be a New Years Day számot a hálószoba helyiségben
+
+    Játszd le a New Years Day számot a hálószoba hangszórón rádió módban
+
+    Szóljon az A Hard Days Night dal a Billy Joel előadótól a hálószoba hangszórón
+
+    Hallgatnék Classic Rock lejátszási listát a dolgozó szobában
+
+    Menjen a BBC Radio 1 rádióállomás a hálószoba
+
+    Indítsd el a Classical Nights albumot a nappali hangszórón
+
+    Hallgatnám a Classical Nights lemezt a nappali
+
+    Játszd le az U2 zenekart
+
+    Szóljon a Muse együttes
+
+    Keverj Muse dalt
+
+    Keverj Classical Nights albumot a fürdő szobában
+
+    Kapcsold be a Roadside Picnic hangoskönyvet a nappali lejátszón
+
+    ```'
+  input:
+    default_player_entity_id_input:
+      name: Alapértelmezett lejátszó
+      selector:
+        entity:
+          filter:
+          - integration: music_assistant
+            domain:
+            - media_player
+          multiple: false
+    trigger_response_settings:
+      name: Aktiválás és válaszbeállítások az Asszisztenshez
+      icon: mdi:chat
+      description: 'Ezekben a beállításokban módosíthatja a meglévő aktiváló mondatokat
+        vagy hozzáadhat újakat. A szögletes zárójelek [ ] közé zárt szöveg opcionális.
+        A kerek zárójelek ( ) és a függőleges vonal | segítségével több értéket adhat
+        meg, amelyek ''vagy'' kapcsolatban állnak. A { lekérdezés } egy helyettesítő
+        érték, amely a kért médiát és opcionálisan a területet vagy Music Assistant
+        lejátszót tartalmazza.
+
+        Beállíthatja az Asszisztens válaszait is. A válaszok jinja sablonokat használnak,
+        amelyekbe a médiaadatok és a Music Assistant lejátszó neve kerül.'
+      collapsed: true
+      input:
+        album_trigger:
+          name: Album aktiváló
+          description: Aktiváló mondatok egy adott album lejátszásához.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (játszd le|indítsd el|kapcsold be|hallgatnám|keverj) [a |az ]{media_name}
+            (albumot|lemezt|kislemezt|nagylemezt) [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
+            (rádió|rádió módban) {radio_mode}]
+          - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (album|lemez|kislemez|nagylemez)
+            [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
+            (rádió|rádió módban) {radio_mode}]
+        track_trigger:
+          name: Szám aktiváló
+          description: Aktiváló mondatok egy adott szám lejátszásához.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (játszd le|indítsd el|kapcsold be|hallgatnám|keverj) [a |az ]{media_name}
+            (számot|dalt) [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
+            (rádió|rádió módban) {radio_mode}]
+          - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (szám|dal)
+            [[a |az ]{artist} (előadótól|zenésztől|bandától|együttestől|zenekartól)]
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
+            (rádió|rádió módban) {radio_mode}]
+        artist_trigger:
+          name: Előadó aktiváló
+          description: Aktiváló mondatok egy adott előadó zenéjének lejátszásához.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (játszd le|indítsd el|kapcsold be|hallgatnám|keverj) [a |az ]{media_name}
+            (előadót|zenészt|bandát|együttest|zenekart) [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][ (rádió|rádió módban) {radio_mode}]
+          - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (előadó|zenész|banda|együttes|zenekar)
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
+            (rádió|rádió módban) {radio_mode}]
+        audiobook_trigger:
+          name: Hangoskönyv aktiváló
+          description: Aktiváló mondatok egy hangoskönyv lejátszásához.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (játszd le|indítsd el|kapcsold be|hallgatnám) [a |az ]{media_name}
+            (hangoskönyvet|könyvet) [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]]
+          - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (hangoskönyv|könyv)
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]]
+        radio_trigger:
+          name: Rádió aktiváló
+          description: Aktiváló mondatok egy rádióállomás lejátszásához.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (játszd le|indítsd el|kapcsold be|hallgatnám) [a |az ]{media_name}
+            (rádióállomást|rádiót|rádióadót|állomást) [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]]
+          - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (rádióállomás|rádió|rádióadó|állomás)
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]]
+        playlist_trigger:
+          name: Lejátszási lista aktiváló
+          description: Aktiváló mondatok egy lejátszási lista lejátszásához.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (játszd le|indítsd el|kapcsold be|hallgatnám|keverj) [a |az ]{media_name}
+            (lejátszási listát|playlistet) [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
+            (rádió|rádió módban) {radio_mode}]
+          - (szóljon|menjen|hallgatnék) [a |az ]{media_name} (lejátszási lista|playlist)
+            [(a |az ){area_or_player_name}[ szobában| helyiségben| hangszórón| lejátszón| szobán]][
+            (rádió|rádió módban) {radio_mode}]
+        response_input:
+          name: Válasz az Asszisztenstől
+          description: Az Asszisztens által adott válasz.
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '{{ ''Keverem'' if ''keverj'' in trigger.sentence | lower else
+            ''Lejátszom''}} — {{ trigger.slots.media_name }} — {{ mass_player_name
+            }}'
+triggers:
+- trigger: conversation
+  command: !input album_trigger
+  id: album
+- trigger: conversation
+  command: !input track_trigger
+  id: track
+- trigger: conversation
+  command: !input artist_trigger
+  id: artist
+- trigger: conversation
+  command: !input audiobook_trigger
+  id: audiobook
+- trigger: conversation
+  command: !input radio_trigger
+  id: radio
+- trigger: conversation
+  command: !input playlist_trigger
+  id: playlist
+actions:
+- alias: Változók definiálása az automatizációhoz
+  variables:
+    version: 20250404
+    shuffle: '{{ ''keverj'' in trigger.sentence | lower }}'
+    default_player_entity_id: !input default_player_entity_id_input
+    trigger_id: '{{ trigger.id }}'
+    area_or_player_name: '{{ trigger.slots.area_or_player_name | default }}'
+    assist_device_id: '{{ trigger.device_id }}'
+    action_data:
+      media_id: '{{ trigger.slots.media_name }}'
+      media_type: '{{ ''radio'' if ''rádió'' in media_name | lower else trigger_id
+        }}'
+      artist: '{{ trigger.slots.artist | default }}'
+      radio_mode: '{{ ''rádió'' in trigger.slots.radio_mode | default | lower }}'
+    ma_players: '{{  integration_entities(''music_assistant'') | select(''match'', ''media_player'') | list }}'
+    player_entity_id_by_player_name: "{{ ma_players |
+      expand \n  | selectattr('name', 'match', area_or_player_name, ignorecase=true)\n
+      \ | map(attribute='entity_id') | list }}\n"
+    player_entity_id_by_area_name: '{{ areas() | map(''area_name'') | select(''match'',
+      area_or_player_name,  ignorecase=true) | map(''area_entities'') | sum(start=[])
+      | select(''in'',  ma_players) | list }}
+
+      '
+    player_entity_id_by_assist_area: '{{ area_entities(area_id(trigger.device_id))
+      | select(''in'', ma_players) | list }}
+
+      '
+    mass_player_entity_id: "{{ player_entity_id_by_player_name or player_entity_id_by_area_name
+      \nor player_entity_id_by_assist_area or [default_player_entity_id] }}\n"
+    mass_player_name: '{{ mass_player_entity_id | map(''state_attr'', ''friendly_name'')
+      | join('', '') }}'
+- alias: Média küldése a kiválasztott Music Assistant lejátszónak
+  action: music_assistant.play_media
+  data: '{{ dict(action_data.items() | selectattr(''1'')) }}'
+  target:
+    entity_id: '{{ mass_player_entity_id }}'
+- alias: Keverés be/kikapcsolása a Music Assistant lejátszón
+  action: media_player.shuffle_set
+  data:
+    shuffle: '{{ shuffle }}'
+  target:
+    entity_id: '{{ mass_player_entity_id }}'
+- alias: Válasz visszaküldése
+  set_conversation_response: !input response_input
+mode: single
