@@ -265,7 +265,4 @@ sequence:
                 {% set text = text + "- album: the album name (for tracks, if shown)\n" %}
                 {{ text }}
           - stop: Search complete
-            response_variable: final_response
-          - variables:
-              final_response:
-                response: '{{ response_text }}'
+            response_variable: response_text
