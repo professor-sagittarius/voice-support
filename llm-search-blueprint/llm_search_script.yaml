@@ -217,6 +217,8 @@ sequence:
                 {% set lines = [] %}
                 {% for item in search_results.playlists[:search_limit] %}
                   {% set lines = lines + ["- " + item.name] %}
+                {% endfor %}
+                {{ lines }}
               radio_lines: >
                 {% set lines = [] %}
                 {% for item in search_results.radio[:search_limit] %}
