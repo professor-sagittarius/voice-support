@@ -166,14 +166,9 @@ sequence:
       - action: persistent_notification.create
         data:
           title: Debug Search Results
-          message: "type: {{ search_results | string | truncate(50) }}"
+          message: "artists count: {{ search_results.artists | length }}"
       - variables:
-          artists: '{{ search_results.artists | default([]) }}'
-          albums: '{{ search_results.albums | default([]) }}'
-          tracks: '{{ search_results.tracks | default([]) }}'
-          playlists: '{{ search_results.playlists | default([]) }}'
-          radios: '{{ search_results.radio | default([]) }}'
-          has_results: '{{ (artists | length > 0) or (albums | length > 0) or (tracks | length > 0) or (playlists | length > 0) or (radios | length > 0) }}'
+          has_results: '{{ (search_results.artists | length > 0) or (search_results.albums | length > 0) or (search_results.tracks | length > 0) or (search_results.playlists | length > 0) or (search_results.radio | length > 0) }}'
       - choose:
           - conditions:
               - condition: template
@@ -188,13 +183,13 @@ sequence:
           - variables:
               artist_lines: >
                 {% set lines = [] %}
-                {% for item in artists[:search_limit] %}
+                {% for item in search_results.artists[:search_limit] %}
                   {% set lines = lines + ["- " + item.name] %}
                 {% endfor %}
                 {{ lines }}
               album_lines: >
                 {% set lines = [] %}
-                {% for item in albums[:search_limit] %}
+                {% for item in search_results.albums[:search_limit] %}
                   {% set artist_name = item.artists[0].name if item.artists else "" %}
                   {% if artist_name %}
                     {% set lines = lines + ["- " + item.name + " by " + artist_name] %}
@@ -205,7 +200,7 @@ sequence:
                 {{ lines }}
               track_lines: >
                 {% set lines = [] %}
-                {% for item in tracks[:search_limit] %}
+                {% for item in search_results.tracks[:search_limit] %}
                   {% set artist_name = item.artists[0].name if item.artists else "" %}
                   {% set album_name = item.album.name if item.album else "" %}
                   {% set line = "- " + item.name %}
@@ -220,48 +215,46 @@ sequence:
                 {{ lines }}
               playlist_lines: >
                 {% set lines = [] %}
-                {% for item in playlists[:search_limit] %}
+                {% for item in search_results.playlists[:search_limit] %}
                   {% set lines = lines + ["- " + item.name] %}
-                {% endfor %}
-                {{ lines }}
               radio_lines: >
                 {% set lines = [] %}
-                {% for item in radios[:search_limit] %}
+                {% for item in search_results.radio[:search_limit] %}
                   {% set lines = lines + ["- " + item.name] %}
                 {% endfor %}
                 {{ lines }}
               response_text: >
                 {% set text = 'Found results for "' + search_query + '":\n\n' %}
-                {% if artists | length > 0 %}
-                  {% set text = text + "ARTISTS (" + (artists[:search_limit] | length | string) + "):\n" %}
+                {% if search_results.artists | length > 0 %}
+                  {% set text = text + "ARTISTS (" + (search_results.artists[:search_limit] | length | string) + "):\n" %}
                   {% for line in artist_lines %}
                     {% set text = text + line + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
-                {% if albums | length > 0 %}
-                  {% set text = text + "ALBUMS (" + (albums[:search_limit] | length | string) + "):\n" %}
+                {% if search_results.albums | length > 0 %}
+                  {% set text = text + "ALBUMS (" + (search_results.albums[:search_limit] | length | string) + "):\n" %}
                   {% for line in album_lines %}
                     {% set text = text + line + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
-                {% if tracks | length > 0 %}
-                  {% set text = text + "TRACKS (" + (tracks[:search_limit] | length | string) + "):\n" %}
+                {% if search_results.tracks | length > 0 %}
+                  {% set text = text + "TRACKS (" + (search_results.tracks[:search_limit] | length | string) + "):\n" %}
                   {% for line in track_lines %}
                     {% set text = text + line + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
-                {% if playlists | length > 0 %}
-                  {% set text = text + "PLAYLISTS (" + (playlists[:search_limit] | length | string) + "):\n" %}
+                {% if search_results.playlists | length > 0 %}
+                  {% set text = text + "PLAYLISTS (" + (search_results.playlists[:search_limit] | length | string) + "):\n" %}
                   {% for line in playlist_lines %}
                     {% set text = text + line + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
-                {% if radios | length > 0 %}
-                  {% set text = text + "RADIOS (" + (radios[:search_limit] | length | string) + "):\n" %}
+                {% if search_results.radio | length > 0 %}
+                  {% set text = text + "RADIOS (" + (search_results.radio[:search_limit] | length | string) + "):\n" %}
                   {% for line in radio_lines %}
                     {% set text = text + line + "\n" %}
                   {% endfor %}
