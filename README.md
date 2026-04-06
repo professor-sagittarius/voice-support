@@ -236,5 +236,69 @@ All responses and results are generated each time the script is used, so don't e
 - Command: *Shuffle some music by Billy Talent*
 
   Response: *I am now shuffling music by Billy Talent in the workshop. Enjoy the tunes!*
-  
+
   Result: songs by Billy Talent will be played in the area the command was issued from, and the player in that area will have its shuffle setting turned on
+
+## Option 4: Composite Script for LLM Integrations (Recommended)
+
+This script combines the functionality of both search and play into one tool. It first searches Music Assistant, then either auto-plays the results when a specific media_type is provided, or returns formatted choices when the search is more abstract or ambiguous.
+
+**Note:** This is the recommended approach for LLM integrations as it handles both direct play requests and discovery-style queries intelligently.
+
+The blueprint is located in the `llm-composite-blueprint` folder of this repository and can be imported by using the following button:
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fmusic-assistant%2Fvoice-support%2Fblob%2Fmain%2Fllm-composite-blueprint%2Fllm_composite_script.yaml)
+
+The language of the voice command is not relevant, the script has all descriptions in English, but it will be used by voice commands issued in a different language as well.
+
+### Configuration
+
+1. An LLM integration needs to be set up, and used in your Voice pipeline
+2. Allow the LLM integration to access your house, otherwise it won't be able to use the script as a tool
+3. Import the Blueprint using the button above
+4. Create a script using the blueprint. Configure the Music Assistant settings including default player, result limit, and radio mode. Optionally adjust the prompt settings for your specific LLM model.
+5. Save the script, make sure to give it a clear description, as that is what will be used by the LLM to determine when to use it (see example below).
+6. Expose the script to Assist
+
+Suggestion for the script description:
+>   This script searches Music Assistant and either auto-plays results or returns available choices. The tool takes the following arguments: media_id, media_type, artist, album, area, media_player, shuffle, limit. media_id is always required. Use this tool whenever the user wants to play music.
+
+### Usage
+
+There is no required format for the sentences. The script intelligently handles both direct playback requests and discovery queries:
+
+- When `media_type` is specified (artist, album, track, playlist, radio), the script searches and automatically plays the best match
+- When `media_type` is not specified or the query is ambiguous, the script returns formatted choices for the user to select from
+- You can add an area or Music Assistant player to specify where to play
+- If the area and Music Assistant player are both omitted, it will take the area from which the command is issued
+- If the area cannot be determined (for example if you issued a command from the browser), it will use the default player if you provided one
+- If no default player is provided, it will ask to specify an area or player
+
+It will differ per LLM integration how well the commands are understood. If the command is not clear enough, the LLM might ask for more details. Especially for smaller models more guidance can be required. If needed you can adjust the prompts used for each parameter.
+
+### Examples
+All responses and results are generated each time the script is used, so don't expect the exact same results as below.
+
+- Command: *Play the album from that grunge band with the baby swimming towards a bank note on the album cover in the kitchen*
+
+  Response: *The album "Nevermind" by Nirvana is now playing in the kitchen*
+
+  Result: The album "Nevermind" will be played in the kitchen
+
+- Command: *Find me some classic rock songs*
+
+  Response: *Here are some classic rock options: 1. Led Zeppelin - Stairway to Heaven, 2. Queen - Bohemian Rhapsody, 3. The Rolling Stones - Paint It Black. Which would you like to play?*
+
+  Result: The script returns choices since no specific media_type was provided
+
+- Command: *Play some jazz music*
+
+  Response: *I've found several jazz artists: 1. Miles Davis, 2. John Coltrane, 3. Duke Ellington. Please specify which artist you'd like to hear.*
+
+  Result: When the query is ambiguous, the script returns choices instead of auto-playing
+
+- Command: *Shuffle songs by Billy Talent in the workshop*
+
+  Response: *I am now shuffling music by Billy Talent in the workshop. Enjoy the tunes!*
+
+  Result: Songs by Billy Talent will be played with shuffle enabled on the player in the workshop
