@@ -264,5 +264,8 @@ sequence:
                 {% set text = text + "- artist: the artist name (for tracks/albums, if shown)\n" %}
                 {% set text = text + "- album: the album name (for tracks, if shown)\n" %}
                 {{ text }}
+          - variables:
+              search_response:
+                response: '{{ response_text }}'
           - stop: Search complete
-            response_variable: response_text
+            response_variable: search_response
