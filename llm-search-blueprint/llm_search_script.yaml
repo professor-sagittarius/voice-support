@@ -166,7 +166,7 @@ sequence:
       - action: persistent_notification.create
         data:
           title: Debug Search Results
-          message: '{{ "defined: " ~ (search_results is defined) ~ " | " ~ (search_results | to_nice_json) }}'
+          message: "defined: {{ search_results is defined }}"
       - variables:
           artists: '{{ search_results.artists | default([]) }}'
           albums: '{{ search_results.albums | default([]) }}'
