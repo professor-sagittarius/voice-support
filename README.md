@@ -238,3 +238,52 @@ All responses and results are generated each time the script is used, so don't e
   Response: *I am now shuffling music by Billy Talent in the workshop. Enjoy the tunes!*
   
   Result: songs by Billy Talent will be played in the area the command was issued from, and the player in that area will have its shuffle setting turned on
+
+## Option 4: Search Script for LLM Integrations
+
+A search script that allows LLM integrations like [Open AI Conversation](https://www.home-assistant.io/integrations/openai_conversation/) (ChatGPT) or [Google Generative AI](https://www.home-assistant.io/integrations/google_generative_ai_conversation/) (Gemini) to search Music Assistant before playing.
+
+This script addresses a limitation of Option 3: when the LLM guesses search terms that don't match available music, playback fails without feedback. This script lets the LLM see search results first, then call the play script with accurate parameters.
+
+The blueprint is located in the `llm-search-blueprint` folder of this repository and can be imported using the following button:
+
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fmusic-assistant%2Fvoice-support%2Fblob%2Fmain%2Fllm-search-blueprint%2Fllm_search_script.yaml)
+
+### Configuration
+
+1. An LLM integration needs to be set up and used in your Voice pipeline
+2. Allow the LLM integration to access your house, otherwise it won't be able to use the script as a tool
+3. Import the Blueprint using the button above
+4. Create a script using the blueprint
+5. Select your Music Assistant instance
+6. Optionally adjust the default result limit and prompts
+7. Save the script with a clear description
+8. Expose the script to Assist
+
+Suggestion for the script description:
+>   This script searches Music Assistant for available music. Use this before calling the play script to see what matches your request. The tool takes the following arguments: search_query, media_type, artist, album, limit. search_query is always required. Use this tool whenever the user wants to play music but you need to see what is available.
+
+### Usage
+
+1. The LLM calls this search script with the user's request
+2. The script returns formatted search results
+3. The LLM chooses from the results
+4. The LLM calls the Option 3 play script with the chosen item
+
+There is no required format for search queries. Natural language works well.
+
+### Examples
+
+- User: "Play some lofi sleep music"
+  - LLM calls search with search_query="lofi sleep"
+  - Script returns: artists, albums, tracks, playlists matching "lofi sleep"
+  - LLM chooses a playlist and calls the play script
+
+- User: "I want to listen to Dark Side of the Moon"
+  - LLM calls search with search_query="Dark Side of the Moon", media_type="album"
+  - Script returns: albums matching the query
+  - LLM calls the play script with the album name
+
+### Relationship to Option 3
+
+This script is designed to work with Option 3. Use the search script to discover what's available, then use the Option 3 play script to play your selection.
