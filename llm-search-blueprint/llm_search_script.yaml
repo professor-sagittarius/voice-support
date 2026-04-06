@@ -179,16 +179,18 @@ sequence:
           - variables:
               response_text: >
                 {% set text = 'Found results for "' + search_query + '":\n\n' %}
+                {% set limit = search_limit | default(3, true) | int %}
                 {% if search_results.artists | length > 0 %}
-                  {% set text = text + "ARTISTS (" + (search_results.artists[:search_limit] | length | string) + "):\n" %}
-                  {% for item in search_results.artists[:search_limit] %}
+                  {% set text = text + "ARTISTS (" + (search_results.artists[:limit] | length | string) + "):\n" %}
+                  {% set text = text + "DEBUG: first artist = " + search_results.artists[0].name + "\n" %}
+                  {% for item in search_results.artists[:limit] %}
                     {% set text = text + "- " + item.name + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.albums | length > 0 %}
-                  {% set text = text + "ALBUMS (" + (search_results.albums[:search_limit] | length | string) + "):\n" %}
-                  {% for item in search_results.albums[:search_limit] %}
+                  {% set text = text + "ALBUMS (" + (search_results.albums[:limit] | length | string) + "):\n" %}
+                  {% for item in search_results.albums[:limit] %}
                     {% set artist_name = item.artists[0].name if item.artists else "" %}
                     {% if artist_name %}
                       {% set text = text + "- " + item.name + " by " + artist_name + "\n" %}
@@ -199,8 +201,8 @@ sequence:
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.tracks | length > 0 %}
-                  {% set text = text + "TRACKS (" + (search_results.tracks[:search_limit] | length | string) + "):\n" %}
-                  {% for item in search_results.tracks[:search_limit] %}
+                  {% set text = text + "TRACKS (" + (search_results.tracks[:limit] | length | string) + "):\n" %}
+                  {% for item in search_results.tracks[:limit] %}
                     {% set artist_name = item.artists[0].name if item.artists else "" %}
                     {% set album_name = item.album.name if item.album else "" %}
                     {% set line = "- " + item.name %}
@@ -215,15 +217,15 @@ sequence:
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.playlists | length > 0 %}
-                  {% set text = text + "PLAYLISTS (" + (search_results.playlists[:search_limit] | length | string) + "):\n" %}
-                  {% for item in search_results.playlists[:search_limit] %}
+                  {% set text = text + "PLAYLISTS (" + (search_results.playlists[:limit] | length | string) + "):\n" %}
+                  {% for item in search_results.playlists[:limit] %}
                     {% set text = text + "- " + item.name + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.radio | length > 0 %}
-                  {% set text = text + "RADIOS (" + (search_results.radio[:search_limit] | length | string) + "):\n" %}
-                  {% for item in search_results.radio[:search_limit] %}
+                  {% set text = text + "RADIOS (" + (search_results.radio[:limit] | length | string) + "):\n" %}
+                  {% for item in search_results.radio[:limit] %}
                     {% set text = text + "- " + item.name + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
