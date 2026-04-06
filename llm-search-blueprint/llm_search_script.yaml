@@ -1,0 +1,274 @@
+blueprint:
+  name: LLM Search Script for Music Assistant
+  source_url: https://github.com/music-assistant/voice-support/blob/main/llm-search-blueprint/llm_search_script.yaml
+  description: '![Image](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
+
+    # Creates a search script for Music Assistant
+
+    * Use this script to search for available music before calling the play script.
+
+    * **Make sure to expose the script to Assist after creating it.**
+
+    * **Make sure to give the script a clear description.** An example can be found
+    below.
+
+
+    ## Example for script description
+
+    `This script searches Music Assistant for available music. Use this before calling
+    the play script to see what matches your request. The tool takes the following
+    arguments: search_query, media_type, artist, album, limit. search_query is always
+    required. Use this tool whenever the user wants to play music but you need to
+    see what is available.`'
+  domain: script
+  author: contributor
+  homeassistant:
+    min_version: 2024.6.0
+  input:
+    search_settings:
+      name: Search Settings
+      icon: mdi:magnify
+      description: Configure how searches are performed.
+      input:
+        config_entry_id:
+          name: Music Assistant Instance
+          description: The Music Assistant integration instance to search.
+          selector:
+            config_entry:
+              integration: music_assistant
+          default:
+        default_limit:
+          name: Default Result Limit
+          description: Maximum number of results to return per media type.
+          selector:
+            number:
+              min: 1
+              max: 20
+              mode: slider
+          default: 3
+    prompt_settings:
+      name: Prompt Settings
+      icon: mdi:robot
+      description: Customize prompts for your specific LLM model.
+      collapsed: true
+      input:
+        search_query_prompt:
+          name: Search Query Prompt
+          description: Prompt for the search_query parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'This argument is mandatory. The search query to find music. Can be
+            a song name, artist name, album name, playlist name, or general terms like
+            "lofi sleep" or "classic rock".'
+        media_type_prompt:
+          name: Media Type Prompt
+          description: Prompt for the media_type parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. Filter results by media type. Options: track, album,
+            artist, playlist, radio. If omitted, all types are searched.'
+        artist_prompt:
+          name: Artist Prompt
+          description: Prompt for the artist parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. Restrict search results to this artist name. Use when
+            the user specifies a particular artist.'
+        album_prompt:
+          name: Album Prompt
+          description: Prompt for the album parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. Restrict search results to this album name. Use when
+            the user specifies a particular album.'
+        limit_prompt:
+          name: Limit Prompt
+          description: Prompt for the limit parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. Maximum number of results per media type. If omitted,
+            uses the default configured in the blueprint settings.'
+mode: single
+max_exceeded: silent
+description: This script searches Music Assistant for available music. Use this before
+  calling the play script to see what matches your request.
+fields:
+  search_query:
+    selector:
+      text:
+    name: Search Query
+    description: !input search_query_prompt
+    required: true
+  media_type:
+    selector:
+      select:
+        options:
+        - track
+        - album
+        - artist
+        - playlist
+        - radio
+    name: Media Type
+    description: !input media_type_prompt
+    required: false
+  artist:
+    selector:
+      text:
+    name: Artist
+    description: !input artist_prompt
+    required: false
+  album:
+    selector:
+      text:
+    name: Album
+    description: !input album_prompt
+    required: false
+  limit:
+    selector:
+      number:
+        min: 1
+        max: 20
+    name: Result Limit
+    description: !input limit_prompt
+    required: false
+sequence:
+  - variables:
+      default_limit: !input default_limit
+      config_entry: !input config_entry_id
+      search_limit: '{{ limit | default(default_limit, true) | int }}'
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: '{{ config_entry is none or config_entry == "" }}'
+        sequence:
+          - stop: No Music Assistant instance selected
+            response_variable: no_instance_response
+          - variables:
+              no_instance_response:
+                response: 'Please select a Music Assistant instance in the script settings.'
+    default:
+      - action: music_assistant.search
+        data:
+          config_entry_id: '{{ config_entry }}'
+          name: '{{ search_query }}'
+          media_type: '{{ media_type | default(omit) }}'
+          artist: '{{ artist | default(omit) }}'
+          album: '{{ album | default(omit) }}'
+          limit: '{{ search_limit }}'
+        response_variable: search_results
+      - variables:
+          artists: '{{ search_results.artists | default([]) }}'
+          albums: '{{ search_results.albums | default([]) }}'
+          tracks: '{{ search_results.tracks | default([]) }}'
+          playlists: '{{ search_results.playlists | default([]) }}'
+          radios: '{{ search_results.radio | default([]) }}'
+          has_results: '{{ (artists | length > 0) or (albums | length > 0) or (tracks | length > 0) or (playlists | length > 0) or (radios | length > 0) }}'
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: '{{ not has_results }}'
+            sequence:
+              - stop: No results found
+                response_variable: no_results_response
+              - variables:
+                  no_results_response:
+                    response: 'No results found for "{{ search_query }}". Try different search terms or check if the music is available in your Music Assistant library.'
+        default:
+          - variables:
+              artist_lines: >
+                {% set lines = [] %}
+                {% for item in artists[:search_limit] %}
+                  {% set lines = lines + ["- " + item.name] %}
+                {% endfor %}
+                {{ lines }}
+              album_lines: >
+                {% set lines = [] %}
+                {% for item in albums[:search_limit] %}
+                  {% set artist_name = item.artists[0].name if item.artists else "" %}
+                  {% if artist_name %}
+                    {% set lines = lines + ["- " + item.name + " by " + artist_name] %}
+                  {% else %}
+                    {% set lines = lines + ["- " + item.name] %}
+                  {% endif %}
+                {% endfor %}
+                {{ lines }}
+              track_lines: >
+                {% set lines = [] %}
+                {% for item in tracks[:search_limit] %}
+                  {% set artist_name = item.artists[0].name if item.artists else "" %}
+                  {% set album_name = item.album.name if item.album else "" %}
+                  {% set line = "- " + item.name %}
+                  {% if artist_name %}
+                    {% set line = line + " by " + artist_name %}
+                  {% endif %}
+                  {% if album_name %}
+                    {% set line = line + " (from " + album_name + ")" %}
+                  {% endif %}
+                  {% set lines = lines + [line] %}
+                {% endfor %}
+                {{ lines }}
+              playlist_lines: >
+                {% set lines = [] %}
+                {% for item in playlists[:search_limit] %}
+                  {% set lines = lines + ["- " + item.name] %}
+                {% endfor %}
+                {{ lines }}
+              radio_lines: >
+                {% set lines = [] %}
+                {% for item in radios[:search_limit] %}
+                  {% set lines = lines + ["- " + item.name] %}
+                {% endfor %}
+                {{ lines }}
+              response_text: >
+                {% set text = 'Found results for "' + search_query + '":\n\n' %}
+                {% if artists | length > 0 %}
+                  {% set text = text + "ARTISTS (" + (artists[:search_limit] | length | string) + "):\n" %}
+                  {% for line in artist_lines %}
+                    {% set text = text + line + "\n" %}
+                  {% endfor %}
+                  {% set text = text + "\n" %}
+                {% endif %}
+                {% if albums | length > 0 %}
+                  {% set text = text + "ALBUMS (" + (albums[:search_limit] | length | string) + "):\n" %}
+                  {% for line in album_lines %}
+                    {% set text = text + line + "\n" %}
+                  {% endfor %}
+                  {% set text = text + "\n" %}
+                {% endif %}
+                {% if tracks | length > 0 %}
+                  {% set text = text + "TRACKS (" + (tracks[:search_limit] | length | string) + "):\n" %}
+                  {% for line in track_lines %}
+                    {% set text = text + line + "\n" %}
+                  {% endfor %}
+                  {% set text = text + "\n" %}
+                {% endif %}
+                {% if playlists | length > 0 %}
+                  {% set text = text + "PLAYLISTS (" + (playlists[:search_limit] | length | string) + "):\n" %}
+                  {% for line in playlist_lines %}
+                    {% set text = text + line + "\n" %}
+                  {% endfor %}
+                  {% set text = text + "\n" %}
+                {% endif %}
+                {% if radios | length > 0 %}
+                  {% set text = text + "RADIOS (" + (radios[:search_limit] | length | string) + "):\n" %}
+                  {% for line in radio_lines %}
+                    {% set text = text + line + "\n" %}
+                  {% endfor %}
+                  {% set text = text + "\n" %}
+                {% endif %}
+                {% set text = text + "\nTo play, call the Music Assistant play script with:\n" %}
+                {% set text = text + "- media_id: the name of your chosen item\n" %}
+                {% set text = text + "- media_type: the type (track/album/artist/playlist)\n" %}
+                {% set text = text + "- artist: the artist name (for tracks/albums, if shown)\n" %}
+                {% set text = text + "- album: the album name (for tracks, if shown)\n" %}
+                {{ text }}
+          - stop: Search complete
+            response_variable: final_response
+          - variables:
+              final_response:
+                response: '{{ response_text }}'
