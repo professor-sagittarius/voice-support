@@ -1,0 +1,414 @@
+blueprint:
+  name: LLM Composite Script for Music Assistant
+  source_url: https://github.com/music-assistant/voice-support/blob/main/llm-composite-blueprint/llm_composite_script.yaml
+  description: '![Image](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
+
+    # Creates a composite script for Music Assistant voice requests
+
+    * This script combines search and play functionality into one script.
+
+    * It searches first, then either auto-plays when media_type is specified,
+      or returns formatted choices when the search is ambiguous.
+
+    * **Make sure to expose the script to Assist after creating it.**
+
+    * **Make sure to give the script a clear description.** An example can be found
+      below.
+
+
+    ## Example for script description
+
+    `This script searches Music Assistant and either auto-plays results or returns
+    available choices. The tool takes the following arguments: media_id, media_type,
+    artist, album, area, media_player, shuffle, limit. media_id is always required.
+    Use this tool whenever the user wants to play music.`'
+  domain: script
+  author: contributor
+  homeassistant:
+    min_version: 2024.6.0
+  input:
+    music_assistant_settings:
+      name: Music Assistant Settings
+      icon: mdi:music
+      description: Configure Music Assistant instance and playback settings.
+      input:
+        config_entry_id:
+          name: Music Assistant Instance
+          description: The Music Assistant integration instance to search.
+          selector:
+            config_entry:
+              integration: music_assistant
+          default:
+        default_player:
+          name: Default Player
+          description: 'The default Music Assistant player which will be used if it
+            is not clear from the request in which area or on which player the request
+            should be played.
+
+            Leave empty if you do not want a default player.'
+          selector:
+            entity:
+              filter:
+                - integration: music_assistant
+                  domain:
+                    - media_player
+              multiple: false
+          default:
+        default_limit:
+          name: Default Result Limit
+          description: Maximum number of results to return per media type when showing choices.
+          selector:
+            number:
+              min: 1
+              max: 20
+              mode: slider
+          default: 3
+        play_continuously:
+          name: Radio Mode
+          description: 'Determines if the "radio_mode" setting should be set for the
+            play media action.
+
+            When set to "Use player settings" it will use the "Don''t stop the music"
+            setting on the Music Assistant Player.
+
+            When set to "Always" the player will continuously add new songs to the
+            playlist.
+
+            When set to "Never" the player will stop playing after the songs selected
+            by the LLM are finished.'
+          selector:
+            select:
+              options:
+                - Use player settings
+                - Always
+                - Never
+              multiple: false
+              custom_value: false
+              sort: false
+          default: Use player settings
+    prompt_settings:
+      name: Prompt Settings
+      icon: mdi:robot
+      description: Customize prompts for your specific LLM model.
+      collapsed: true
+      input:
+        media_id_prompt:
+          name: Media ID Prompt
+          description: Prompt for the media_id parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'This argument is mandatory and must always be provided.
+
+            The search query to find music. Can be a song name, artist name, album name,
+            playlist name, or general terms like "lofi sleep" or "classic rock".'
+        media_type_prompt:
+          name: Media Type Prompt
+          description: Prompt for the media_type parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. Filter results by media type and enable auto-play.
+            Options: track, album, artist, playlist, radio.
+
+            When specified, if results exist for that type, the first result will be
+            played automatically.
+
+            When omitted or no results match the type, available choices are returned.'
+        artist_prompt:
+          name: Artist Prompt
+          description: Prompt for the artist parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. The artist name. Use when the user specifies a particular
+            artist. This helps refine search results and auto-playback.'
+        album_prompt:
+          name: Album Prompt
+          description: Prompt for the album parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. The album name. Use when the user specifies a particular
+            album. This helps refine search results.'
+        area_prompt:
+          name: Area Prompt
+          description: Prompt for the area parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'The area or areas for which the music is requested. If the request
+            does not mention a target (either an area or a player), use the area the
+            request comes from.
+
+            If the area can not be determined from the request, or the device the
+            request comes from, do not use this parameter.'
+        media_player_prompt:
+          name: Media Player Prompt
+          description: Prompt for the media_player parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Only use "media_player" if the request specifically mentions a
+            media player or multiple media players on which to play the music. This
+            has to be the entity_id of a media player provided by the Music Assistant
+            integration.'
+        shuffle_prompt:
+          name: Shuffle Prompt
+          description: Prompt for the shuffle parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. Set to true if the request mentions shuffling the music.
+            For example, "Shuffle music by Muse" should set shuffle to true.'
+        limit_prompt:
+          name: Limit Prompt
+          description: Prompt for the limit parameter.
+          selector:
+            text:
+              multiline: true
+          default: 'Optional. Maximum number of results per media type when returning
+            choices. If omitted, uses the default configured in the blueprint settings.'
+mode: single
+max_exceeded: silent
+description: This script searches Music Assistant and either auto-plays results or returns
+  available choices. Use this whenever the user wants to play music.
+fields:
+  media_id:
+    selector:
+      text:
+    name: Media ID
+    description: !input media_id_prompt
+    required: true
+  media_type:
+    selector:
+      select:
+        options:
+          - track
+          - album
+          - artist
+          - playlist
+          - radio
+    name: Media Type
+    description: !input media_type_prompt
+    required: false
+  artist:
+    selector:
+      text:
+    name: Artist
+    description: !input artist_prompt
+    required: false
+  album:
+    selector:
+      text:
+    name: Album
+    description: !input album_prompt
+    required: false
+  area:
+    selector:
+      area:
+        entity:
+          integration: music_assistant
+          domain: media_player
+        multiple: true
+    name: Area
+    description: !input area_prompt
+    required: false
+  media_player:
+    selector:
+      entity:
+        filter:
+          - integration: music_assistant
+            domain: media_player
+        multiple: true
+    name: Media Player
+    description: !input media_player_prompt
+    required: false
+  shuffle:
+    selector:
+      boolean:
+    name: Shuffle
+    description: !input shuffle_prompt
+    required: false
+  limit:
+    selector:
+      number:
+        min: 1
+        max: 20
+    name: Result Limit
+    description: !input limit_prompt
+    required: false
+sequence:
+  - variables:
+      version: 20250526
+      default_limit: !input default_limit
+      config_entry: !input config_entry_id
+      default_player: !input default_player
+      play_continuously: !input play_continuously
+      search_limit: '{{ limit | default(default_limit, true) | int }}'
+      shuffle_enabled: '{{ shuffle | default(false, true) | bool }}'
+      media_description: '{{ media_id }}'
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: '{{ config_entry is none or config_entry == "" }}'
+        sequence:
+          - stop: No Music Assistant instance selected
+            response_variable: no_instance_response
+          - variables:
+              no_instance_response:
+                response: 'Please select a Music Assistant instance in the script settings.'
+    default:
+      - variables:
+          search_data:
+            config_entry_id: '{{ config_entry }}'
+            name: '{{ media_id }}'
+            media_type: '{{ media_type | default("", true) }}'
+            artist: '{{ artist | default("", true) }}'
+            album: '{{ album | default("", true) }}'
+            limit: '{{ search_limit }}'
+      - action: music_assistant.search
+        data: '{{ dict(search_data.items() | rejectattr("1", "eq", "")) }}'
+        response_variable: search_results
+      - variables:
+          has_results: '{{ (search_results.artists | length > 0) or (search_results.albums | length > 0) or (search_results.tracks | length > 0) or (search_results.playlists | length > 0) or (search_results.radio | length > 0) }}'
+          player_data: '{% set ma = integration_entities(''music_assistant'') %}
+
+            {% set ma_names = ma | map(''state_attr'', ''friendly_name'') | list %}
+
+            {% set ns = namespace(players=[]) %} {% for player in media_player | default([], true) %}
+
+            {% if player in ma %}
+
+            {% set ns.players = ns.players + [player] %}
+
+            {% elif player in ma_names %}
+
+            {% set entity = ma | select(''is_state_attr'', ''friendly_name'', player) | list %}
+
+            {% set ns.players = ns.players + entity %}
+
+            {% endif %}
+
+            {% endfor %}
+
+            {{ ns.players }}'
+          target_data:
+            area_id: '{{ area | default(''NA'', true) }}'
+            entity_id: '{{ ''NA'' if area | default and not player_data else (player_data or default_player) | default(''NA'', true) }}'
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: '{{ not has_results }}'
+            sequence:
+              - stop: No results found
+                response_variable: no_results_response
+              - variables:
+                  no_results_response:
+                    response: 'No results found for "{{ media_id }}". Try different search terms or check if the music is available in your Music Assistant library.'
+        default:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: '{{ media_type | default("", true) != "" and search_results[media_type ~ "s"] | default([]) | length > 0 }}'
+                sequence:
+                  - variables:
+                      selected_result: '{{ search_results[media_type ~ "s"][0] }}'
+                      result_name: '{{ selected_result.name }}'
+                      result_artist: '{{ selected_result.artists[0].name if selected_result.artists | default([]) | length > 0 else "" }}'
+                      result_album: '{{ selected_result.album.name if selected_result.album | default(none) else "" }}'
+                      play_data:
+                        media_id: '{{ result_name }}'
+                        media_type: '{{ media_type }}'
+                        artist: '{{ result_artist | default("NA", true) }}'
+                        album: '{{ result_album | default("NA", true) }}'
+                        radio_mode: '{% if play_continuously == ''Never'' %}false{% elif play_continuously == ''Always'' and media_type != ''radio'' %}true{% else %}NA{% endif %}'
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: '{{ not (area | default or player_data or default_player) }}'
+                        sequence:
+                          - stop: No valid target
+                            response_variable: no_target_response
+                          - variables:
+                              no_target_response:
+                                response: 'Unable to find valid target. Please specify an area or media player.'
+                  - action: music_assistant.play_media
+                    data: '{{ dict(play_data.items() | rejectattr("1", "eq", "NA")) }}'
+                    target: '{{ dict(target_data.items() | rejectattr("1", "eq", "NA")) }}'
+                  - action: media_player.shuffle_set
+                    data:
+                      shuffle: '{{ shuffle_enabled }}'
+                    target: '{{ dict(target_data.items() | rejectattr("1", "eq", "NA")) }}'
+                  - variables:
+                      target_name: '{{ area[0] if area | default([]) | length > 0 else (player_data[0] if player_data | default([]) | length > 0 else default_player) }}'
+                  - stop: Playback started
+                    response_variable: play_response
+                  - variables:
+                      play_response:
+                        response: 'Now playing {{ media_type }} "{{ result_name }}"{% if result_artist %} by {{ result_artist }}{% endif %} in {{ target_name | default("the selected area") }}.'
+            default:
+              - variables:
+                  response_text: >
+                    {% set ns = namespace(text = 'Found results for "' + media_id + '":\n\n') %}
+                    {% set limit = search_limit | default(3, true) | int %}
+                    {% if search_results.artists | length > 0 %}
+                      {% set ns.text = ns.text + "ARTISTS (" + (search_results.artists[:limit] | length | string) + "):\n" %}
+                      {% for item in search_results.artists[:limit] %}
+                        {% set ns.text = ns.text + "- " + item.name + "\n" %}
+                      {% endfor %}
+                      {% set ns.text = ns.text + "\n" %}
+                    {% endif %}
+                    {% if search_results.albums | length > 0 %}
+                      {% set ns.text = ns.text + "ALBUMS (" + (search_results.albums[:limit] | length | string) + "):\n" %}
+                      {% for item in search_results.albums[:limit] %}
+                        {% set artist_name = item.artists[0].name if item.artists else "" %}
+                        {% if artist_name %}
+                          {% set ns.text = ns.text + "- " + item.name + " by " + artist_name + "\n" %}
+                        {% else %}
+                          {% set ns.text = ns.text + "- " + item.name + "\n" %}
+                        {% endif %}
+                      {% endfor %}
+                      {% set ns.text = ns.text + "\n" %}
+                    {% endif %}
+                    {% if search_results.tracks | length > 0 %}
+                      {% set ns.text = ns.text + "TRACKS (" + (search_results.tracks[:limit] | length | string) + "):\n" %}
+                      {% for item in search_results.tracks[:limit] %}
+                        {% set artist_name = item.artists[0].name if item.artists else "" %}
+                        {% set album_name = item.album.name if item.album else "" %}
+                        {% set line = "- " + item.name %}
+                        {% if artist_name %}
+                          {% set line = line + " by " + artist_name %}
+                        {% endif %}
+                        {% if album_name %}
+                          {% set line = line + " (from " + album_name + ")" %}
+                        {% endif %}
+                        {% set ns.text = ns.text + line + "\n" %}
+                      {% endfor %}
+                      {% set ns.text = ns.text + "\n" %}
+                    {% endif %}
+                    {% if search_results.playlists | length > 0 %}
+                      {% set ns.text = ns.text + "PLAYLISTS (" + (search_results.playlists[:limit] | length | string) + "):\n" %}
+                      {% for item in search_results.playlists[:limit] %}
+                        {% set ns.text = ns.text + "- " + item.name + "\n" %}
+                      {% endfor %}
+                      {% set ns.text = ns.text + "\n" %}
+                    {% endif %}
+                    {% if search_results.radio | length > 0 %}
+                      {% set ns.text = ns.text + "RADIOS (" + (search_results.radio[:limit] | length | string) + "):\n" %}
+                      {% for item in search_results.radio[:limit] %}
+                        {% set ns.text = ns.text + "- " + item.name + "\n" %}
+                      {% endfor %}
+                      {% set ns.text = ns.text + "\n" %}
+                    {% endif %}
+                    {% set ns.text = ns.text + "\nTo play, call this script again with:\n" %}
+                    {% set ns.text = ns.text + "- media_id: the name of your chosen item\n" %}
+                    {% set ns.text = ns.text + "- media_type: the type (track/album/artist/playlist/radio)\n" %}
+                    {% set ns.text = ns.text + "- artist: the artist name (for tracks/albums, if shown)\n" %}
+                    {% set ns.text = ns.text + "- album: the album name (for tracks, if shown)\n" %}
+                    {{ ns.text }}
+              - variables:
+                  search_response:
+                    response: '{{ response_text }}'
+              - stop: Search complete
+                response_variable: search_response
