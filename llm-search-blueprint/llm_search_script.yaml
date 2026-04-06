@@ -166,7 +166,7 @@ sequence:
       - action: persistent_notification.create
         data:
           title: Debug Search Results
-          message: "defined: {{ search_results is defined }}"
+          message: "type: {{ search_results | string | truncate(50) }}"
       - variables:
           artists: '{{ search_results.artists | default([]) }}'
           albums: '{{ search_results.albums | default([]) }}'
