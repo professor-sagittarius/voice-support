@@ -108,11 +108,11 @@ fields:
     selector:
       select:
         options:
-        - track
-        - album
-        - artist
-        - playlist
-        - radio
+          - track
+          - album
+          - artist
+          - playlist
+          - radio
     name: Media Type
     description: !input media_type_prompt
     required: false
@@ -152,14 +152,16 @@ sequence:
               no_instance_response:
                 response: 'Please select a Music Assistant instance in the script settings.'
     default:
+      - variables:
+          search_data:
+            config_entry_id: '{{ config_entry }}'
+            name: '{{ search_query }}'
+            media_type: '{{ media_type | default("", true) }}'
+            artist: '{{ artist | default("", true) }}'
+            album: '{{ album | default("", true) }}'
+            limit: '{{ search_limit }}'
       - action: music_assistant.search
-        data:
-          config_entry_id: '{{ config_entry }}'
-          name: '{{ search_query }}'
-          media_type: '{{ media_type | default(omit) }}'
-          artist: '{{ artist | default(omit) }}'
-          album: '{{ album | default(omit) }}'
-          limit: '{{ search_limit }}'
+        data: '{{ dict(search_data.items() | rejectattr("1", "eq", "")) }}'
         response_variable: search_results
       - variables:
           artists: '{{ search_results.artists | default([]) }}'
