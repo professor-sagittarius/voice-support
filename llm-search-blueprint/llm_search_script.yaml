@@ -177,84 +177,54 @@ sequence:
                     response: 'No results found for "{{ search_query }}". Try different search terms or check if the music is available in your Music Assistant library.'
         default:
           - variables:
-              artist_lines: >
-                {% set lines = [] %}
-                {% for item in search_results.artists[:search_limit] %}
-                  {% set lines = lines + ["- " + item.name] %}
-                {% endfor %}
-                {{ lines }}
-              album_lines: >
-                {% set lines = [] %}
-                {% for item in search_results.albums[:search_limit] %}
-                  {% set artist_name = item.artists[0].name if item.artists else "" %}
-                  {% if artist_name %}
-                    {% set lines = lines + ["- " + item.name + " by " + artist_name] %}
-                  {% else %}
-                    {% set lines = lines + ["- " + item.name] %}
-                  {% endif %}
-                {% endfor %}
-                {{ lines }}
-              track_lines: >
-                {% set lines = [] %}
-                {% for item in search_results.tracks[:search_limit] %}
-                  {% set artist_name = item.artists[0].name if item.artists else "" %}
-                  {% set album_name = item.album.name if item.album else "" %}
-                  {% set line = "- " + item.name %}
-                  {% if artist_name %}
-                    {% set line = line + " by " + artist_name %}
-                  {% endif %}
-                  {% if album_name %}
-                    {% set line = line + " (from " + album_name + ")" %}
-                  {% endif %}
-                  {% set lines = lines + [line] %}
-                {% endfor %}
-                {{ lines }}
-              playlist_lines: >
-                {% set lines = [] %}
-                {% for item in search_results.playlists[:search_limit] %}
-                  {% set lines = lines + ["- " + item.name] %}
-                {% endfor %}
-                {{ lines }}
-              radio_lines: >
-                {% set lines = [] %}
-                {% for item in search_results.radio[:search_limit] %}
-                  {% set lines = lines + ["- " + item.name] %}
-                {% endfor %}
-                {{ lines }}
               response_text: >
                 {% set text = 'Found results for "' + search_query + '":\n\n' %}
                 {% if search_results.artists | length > 0 %}
                   {% set text = text + "ARTISTS (" + (search_results.artists[:search_limit] | length | string) + "):\n" %}
-                  {% for line in artist_lines %}
-                    {% set text = text + line + "\n" %}
+                  {% for item in search_results.artists[:search_limit] %}
+                    {% set text = text + "- " + item.name + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.albums | length > 0 %}
                   {% set text = text + "ALBUMS (" + (search_results.albums[:search_limit] | length | string) + "):\n" %}
-                  {% for line in album_lines %}
-                    {% set text = text + line + "\n" %}
+                  {% for item in search_results.albums[:search_limit] %}
+                    {% set artist_name = item.artists[0].name if item.artists else "" %}
+                    {% if artist_name %}
+                      {% set text = text + "- " + item.name + " by " + artist_name + "\n" %}
+                    {% else %}
+                      {% set text = text + "- " + item.name + "\n" %}
+                    {% endif %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.tracks | length > 0 %}
                   {% set text = text + "TRACKS (" + (search_results.tracks[:search_limit] | length | string) + "):\n" %}
-                  {% for line in track_lines %}
+                  {% for item in search_results.tracks[:search_limit] %}
+                    {% set artist_name = item.artists[0].name if item.artists else "" %}
+                    {% set album_name = item.album.name if item.album else "" %}
+                    {% set line = "- " + item.name %}
+                    {% if artist_name %}
+                      {% set line = line + " by " + artist_name %}
+                    {% endif %}
+                    {% if album_name %}
+                      {% set line = line + " (from " + album_name + ")" %}
+                    {% endif %}
                     {% set text = text + line + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.playlists | length > 0 %}
                   {% set text = text + "PLAYLISTS (" + (search_results.playlists[:search_limit] | length | string) + "):\n" %}
-                  {% for line in playlist_lines %}
-                    {% set text = text + line + "\n" %}
+                  {% for item in search_results.playlists[:search_limit] %}
+                    {% set text = text + "- " + item.name + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
                 {% if search_results.radio | length > 0 %}
                   {% set text = text + "RADIOS (" + (search_results.radio[:search_limit] | length | string) + "):\n" %}
-                  {% for line in radio_lines %}
-                    {% set text = text + line + "\n" %}
+                  {% for item in search_results.radio[:search_limit] %}
+                    {% set text = text + "- " + item.name + "\n" %}
                   {% endfor %}
                   {% set text = text + "\n" %}
                 {% endif %}
