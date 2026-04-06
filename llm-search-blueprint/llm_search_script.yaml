@@ -163,6 +163,12 @@ sequence:
       - action: music_assistant.search
         data: '{{ dict(search_data.items() | rejectattr("1", "eq", "")) }}'
         response_variable: search_results
+      - action: persistent_notification.create
+        data:
+          title: Debug Search Results
+          message: >
+            search_results type: {{ search_results is defined }}
+            search_results: {{ search_results | to_nice_json }}
       - variables:
           artists: '{{ search_results.artists | default([]) }}'
           albums: '{{ search_results.albums | default([]) }}'
