@@ -163,10 +163,6 @@ sequence:
       - action: music_assistant.search
         data: '{{ dict(search_data.items() | rejectattr("1", "eq", "")) }}'
         response_variable: search_results
-      - action: persistent_notification.create
-        data:
-          title: Debug Search Results
-          message: "artists count: {{ search_results.artists | length }}"
       - variables:
           has_results: '{{ (search_results.artists | length > 0) or (search_results.albums | length > 0) or (search_results.tracks | length > 0) or (search_results.playlists | length > 0) or (search_results.radio | length > 0) }}'
       - choose:
